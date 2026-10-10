@@ -73,10 +73,19 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(() => !gameState.userId);
   const [isStudioOpen, setIsStudioOpen] = useState(false);
   const [isBgmActive, setIsBgmActive] = useState(false);
+  const [isClassroomMode, setIsClassroomMode] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [stageClearModal, setStageClearModal] = useState<{ stageNum: number; stars: number } | null>(null);
   const [badgeModal, setBadgeModal] = useState<{ badge: BadgeItem; isUnlocked: boolean } | null>(null);
   const [mobileSidebar, setMobileSidebar] = useState<'none' | 'left' | 'right'>('none');
+
+  useEffect(() => {
+    if (isClassroomMode) {
+      document.body.classList.add('classroom-mode');
+    } else {
+      document.body.classList.remove('classroom-mode');
+    }
+  }, [isClassroomMode]);
 
   // Save game state
   useEffect(() => {
@@ -225,7 +234,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#85C1E9] bg-gradient-to-b from-[#85C1E9] via-[#A9CCE3] to-[#7FB3D5] text-[#111B27] pb-10 select-none">
+    <div className="min-h-screen forest-bg text-[#111B27] pb-10 select-none relative">
+      {/* Forest Fireflies and Ambient Atmosphere */}
+      <div className="forest-fireflies pointer-events-none" />
+      <div className="forest-trees-footer pointer-events-none" />
+
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#FCE868] text-[#111B27] border-3 border-[#111B27] rounded-lg px-6 py-3 font-black text-sm shadow-[4px_4px_0_#000] animate-bounce">
@@ -239,35 +252,81 @@ export default function App() {
         userName={gameState.userName}
         level={gameState.level}
         isBgmActive={isBgmActive}
+        isClassroomMode={isClassroomMode}
         onToggleBgm={() => {
           soundEngine.toggleBgm((active) => setIsBgmActive(active));
         }}
+        onToggleClassroomMode={() => {
+          setIsClassroomMode((prev) => !prev);
+          showToast(
+            !isClassroomMode
+              ? '🖥️ 수업 집중 모드 ON! 칠판/프로젝터용 대형 화면으로 전환되었습니다.'
+              : '📱 기본 3분할 게임 화면으로 복귀했습니다.'
+          );
+        }}
         onOpenAvatarStudio={() => setIsStudioOpen(true)}
+        onTeacherAdmin={handleTeacherAdmin}
       />
 
+      {/* Classroom Mode Stage Quick Selector Bar */}
+      {isClassroomMode && (
+        <div className="max-w-[1200px] mx-auto mt-3 px-3 relative z-10">
+          <div className="bg-[#1B381E] border-3 border-[#4CAF50] rounded-xl p-2.5 flex items-center justify-between flex-wrap gap-2 text-white shadow-lg">
+            <div className="flex items-center gap-2 font-['DungGeunMo'] text-sm sm:text-base text-[#FCE868]">
+              <span>👩‍🏫 수업 진행 단계:</span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { s: 1, label: '1. 단어 도감' },
+                { s: 2, label: '2. 뜻 퀴즈' },
+                { s: 3, label: '3. 짝 맞추기' },
+                { s: 4, label: '4. 타자 레이스' },
+                { s: 5, label: '5. 문장 빈칸' },
+                { s: 6, label: '6. 수료증' }
+              ].map((item) => (
+                <button
+                  key={item.s}
+                  onClick={() => {
+                    soundEngine.playClick();
+                    setGameState((prev) => ({ ...prev, currentStage: item.s }));
+                  }}
+                  className={`px-3 py-1.5 rounded-lg font-black text-xs sm:text-sm border-2 transition-all cursor-pointer ${
+                    gameState.currentStage === item.s
+                      ? 'bg-[#2E7D32] text-white border-[#81C784] shadow-[0_0_8px_#81C784] scale-105'
+                      : 'bg-[#264E29] text-gray-200 border-emerald-900 hover:bg-[#336838]'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Sidebar Nav Toggles */}
-      <div className="flex md:hidden justify-center gap-2 my-2.5 px-4">
+      <div className="flex md:hidden justify-center gap-2 my-2.5 px-4 relative z-10">
         <button
           onClick={() => setMobileSidebar(mobileSidebar === 'left' ? 'none' : 'left')}
-          className={`px-3 py-1.5 text-xs font-black rounded border-2 border-[#1C2D42] shadow-[2px_2px_0_#000] ${
-            mobileSidebar === 'left' ? 'bg-[#FF7E00] text-white' : 'bg-white'
+          className={`px-3.5 py-2 text-xs sm:text-sm font-black rounded-lg border-2 border-[#1E3F20] shadow-[2px_2px_0_#0E2613] cursor-pointer ${
+            mobileSidebar === 'left' ? 'bg-[#2E7D32] text-white' : 'bg-white text-gray-900'
           }`}
         >
-          📜 퀘스트 목록
+          🌲 수업 진행 단계
         </button>
         <button
           onClick={() => setMobileSidebar(mobileSidebar === 'right' ? 'none' : 'right')}
-          className={`px-3 py-1.5 text-xs font-black rounded border-2 border-[#1C2D42] shadow-[2px_2px_0_#000] ${
-            mobileSidebar === 'right' ? 'bg-[#FF7E00] text-white' : 'bg-white'
+          className={`px-3.5 py-2 text-xs sm:text-sm font-black rounded-lg border-2 border-[#1E3F20] shadow-[2px_2px_0_#0E2613] cursor-pointer ${
+            mobileSidebar === 'right' ? 'bg-[#5D4037] text-white' : 'bg-white text-gray-900'
           }`}
         >
-          👤 캐릭터 정보
+          🍄 내 캐릭터
         </button>
       </div>
 
-      {/* Main 3-Column Persistent Game Layout */}
-      <div className="max-w-[1400px] mx-auto my-4 px-3 sm:px-4 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr_300px] gap-4 items-start">
-        {/* LEFT QUEST LOG */}
+      {/* Main Persistent Game Layout: Left = 수업 진행 단계, Center = 학습 영역, Right = 내 캐릭터 */}
+      <div className="mx-auto my-4 px-3 sm:px-4 grid gap-4 items-start max-w-[1440px] grid-cols-1 md:grid-cols-[220px_1fr_250px] lg:grid-cols-[250px_1fr_290px] xl:grid-cols-[260px_1fr_310px] relative z-10">
+        {/* LEFT: 수업 진행 단계 */}
         <LeftSidebar
           unlockedStage={gameState.unlockedStage}
           currentStage={gameState.currentStage}
@@ -280,8 +339,8 @@ export default function App() {
           isOpenMobile={mobileSidebar === 'left'}
         />
 
-        {/* CENTER MAIN WORKSPACE */}
-        <main className="bg-[#F7FBFE] border-3 border-[#3A516B] rounded-xl shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.7),4px_4px_0_#111B27] p-4 sm:p-6 min-h-[660px]">
+        {/* CENTER: MAIN WORKSPACE */}
+        <main className="bg-[#FFFFFF]/98 border-3 border-[#1E3F20] rounded-2xl shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.1),inset_2px_2px_0_rgba(255,255,255,0.8),5px_5px_0_#0E2613] p-4 sm:p-7 min-h-[660px]">
           {gameState.currentStage === 1 && (
             <Stage1Codex
               vocabList={vocabData}
@@ -364,7 +423,7 @@ export default function App() {
           )}
         </main>
 
-        {/* RIGHT CHARACTER PROFILE */}
+        {/* RIGHT: 내 캐릭터 */}
         <RightSidebar
           userName={gameState.userName}
           level={gameState.level}
@@ -383,8 +442,8 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer className="text-center text-xs font-bold text-gray-700 mt-6">
-        🎉 MapleStory Educational RPG Designed for Lesson 6 // Curated with Modular Avatar Studio 💖
+      <footer className="text-center text-xs font-black text-[#C8E6C9] py-6 tracking-wide drop-shadow-sm relative z-10">
+        🌲 마법의 어휘 숲 • made by 민경쌤 🍁
       </footer>
 
       {/* Secret Teacher Mode Trigger */}
@@ -407,6 +466,8 @@ export default function App() {
       <AvatarStudioModal
         initialConfig={gameState.avatar}
         userLevel={gameState.level}
+        userName={gameState.userName}
+        userId={gameState.userId}
         isOpen={isStudioOpen}
         onSave={(newConfig) => {
           setGameState((prev) => ({
@@ -430,15 +491,15 @@ export default function App() {
               {'☆'.repeat(3 - stageClearModal.stars)}
             </div>
             <p className="text-sm font-bold text-[#1C2D42] mb-6 leading-relaxed">
-              🎉 Stage {stageClearModal.stageNum} 완수 성공!
+              🎉 {stageClearModal.stageNum}단계 완수 성공!
               <br />
-              다음 메이플 어휘 퀘스트가 열렸습니다!
+              다음 수업 단계로 이동합니다!
             </p>
             <button
               onClick={handleCloseClearModal}
-              className="w-full py-3.5 bg-gradient-to-r from-[#FF9800] to-[#F57C00] hover:from-[#FFA726] hover:to-[#FB8C00] text-white font-black text-base rounded-xl border-3 border-black shadow-[3px_3px_0_#000] font-['DungGeunMo'] tracking-wide"
+              className="w-full py-3.5 bg-gradient-to-r from-[#FF9800] to-[#F57C00] hover:from-[#FFA726] hover:to-[#FB8C00] text-white font-black text-base rounded-xl border-3 border-black shadow-[3px_3px_0_#000] font-['DungGeunMo'] tracking-wide cursor-pointer active:scale-98"
             >
-              다음 퀘스트로! 🚀
+              다음 단계로 이동! 🚀
             </button>
           </div>
         </div>

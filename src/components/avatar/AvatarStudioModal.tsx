@@ -45,10 +45,17 @@ import {
 } from '../../data/avatarItems';
 import { AvatarRenderer } from './AvatarRenderer';
 import { soundEngine } from '../../utils/audio';
+import {
+  exportAvatarAsPng,
+  exportAvatarAsSvg,
+  exportAdventurerCardPng
+} from '../../utils/avatarExporter';
 
 interface AvatarStudioModalProps {
   initialConfig: AvatarConfig;
   userLevel: number;
+  userName?: string;
+  userId?: string;
   isOpen: boolean;
   onSave: (newConfig: AvatarConfig) => void;
   onClose: () => void;
@@ -57,6 +64,8 @@ interface AvatarStudioModalProps {
 export const AvatarStudioModal: React.FC<AvatarStudioModalProps> = ({
   initialConfig,
   userLevel,
+  userName = '모험가',
+  userId = '2026',
   isOpen,
   onSave,
   onClose
@@ -390,6 +399,65 @@ export const AvatarStudioModal: React.FC<AvatarStudioModalProps> = ({
               >
                 스튜디오
               </button>
+            </div>
+
+            {/* Export Avatar HD Section */}
+            <div className="w-full bg-[#FFF8E1] border-2 border-[#FFE082] rounded-lg p-2 mt-2.5 shadow-sm">
+              <div className="flex items-center justify-between mb-1.5 px-0.5">
+                <span className="text-[12px] font-black text-[#E65100] flex items-center gap-1 font-['DungGeunMo']">
+                  <span>📸</span> 캐릭터 이미지 내보내기 (Export HD)
+                </span>
+                <span className="text-[10px] text-[#8D6E63] font-sans">고해상도 무손실</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playEquipSound();
+                    exportAvatarAsPng(currentConfig, `${userName}_avatar_hd.png`, 512);
+                    setNotification('✨ 512x512 투명 HD PNG가 다운로드되었습니다!');
+                    setTimeout(() => setNotification(null), 2500);
+                  }}
+                  className="py-1.5 px-1 bg-white hover:bg-orange-50 active:scale-95 border border-orange-300 rounded text-orange-950 flex flex-col items-center justify-center text-[11px] font-bold shadow-xs transition-all cursor-pointer"
+                  title="투명 배경 고화질 512px PNG 이미지 저장"
+                >
+                  <span className="text-sm">🖼️</span>
+                  <span>투명 PNG</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playEquipSound();
+                    exportAvatarAsSvg(currentConfig, `${userName}_avatar.svg`);
+                    setNotification('✨ 원본 벡터 SVG 파일이 다운로드되었습니다!');
+                    setTimeout(() => setNotification(null), 2500);
+                  }}
+                  className="py-1.5 px-1 bg-white hover:bg-orange-50 active:scale-95 border border-orange-300 rounded text-orange-950 flex flex-col items-center justify-center text-[11px] font-bold shadow-xs transition-all cursor-pointer"
+                  title="무한 확대 가능한 벡터 SVG 파일 저장"
+                >
+                  <span className="text-sm">🎨</span>
+                  <span>벡터 SVG</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playFanfare();
+                    exportAdventurerCardPng(currentConfig, {
+                      userName: userName || '모험가',
+                      userId: userId || '2026',
+                      level: userLevel || 1,
+                      title: 'Lesson 6 마스터'
+                    }, `${userName}_adventurer_card.png`);
+                    setNotification('🍁 메이플 모험가 등록증 카드가 발급되었습니다!');
+                    setTimeout(() => setNotification(null), 2500);
+                  }}
+                  className="py-1.5 px-1 bg-gradient-to-b from-[#FFE0B2] to-[#FFCC80] hover:brightness-105 active:scale-95 border border-orange-400 rounded text-[#4E342E] flex flex-col items-center justify-center text-[11px] font-black shadow-xs transition-all cursor-pointer"
+                  title="메이플 모험가 카드 (배경/스탯/인증마크 포함) 저장"
+                >
+                  <span className="text-sm">📇</span>
+                  <span>모험가 카드</span>
+                </button>
+              </div>
             </div>
 
             {/* Bottom Actions: Save & Cancel */}

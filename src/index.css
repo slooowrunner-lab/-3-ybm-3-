@@ -6,6 +6,21 @@
   }
 }
 
+/* Classroom / Presentation Mode: Enlarges text and touch targets for beam projectors & tablets */
+body.classroom-mode {
+  font-size: 115%;
+}
+
+body.classroom-mode .stage-main-card {
+  padding: 2rem !important;
+}
+
+body.classroom-mode h1,
+body.classroom-mode h2,
+body.classroom-mode h3 {
+  letter-spacing: -0.02em;
+}
+
 @keyframes mapleIdle {
   0%, 100% {
     transform: translateY(0px) scale(1, 1);
@@ -27,12 +42,12 @@
   }
 }
 
-@keyframes feverGlow {
-  0% {
-    background-color: #FFB74D;
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
   }
-  100% {
-    background-color: #85C1E9;
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 152, 0, 0);
   }
 }
 
@@ -46,6 +61,61 @@
   transform-origin: bottom center;
 }
 
-body.fever-active {
-  animation: feverGlow 1s infinite alternate;
+.pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+/* 🌲 Enchanted Maple Forest Background UI 🌿 */
+.forest-bg {
+  background-color: #1a331c;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(195, 255, 175, 0.28), transparent 75%),
+    radial-gradient(ellipse 60% 30% at 85% 15%, rgba(255, 235, 140, 0.18), transparent 60%),
+    radial-gradient(circle 350px at 10% 40%, rgba(76, 175, 80, 0.15), transparent 70%),
+    linear-gradient(180deg, #1b381e 0%, #264e29 25%, #2f5f33 55%, #234827 80%, #152b17 100%);
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Subtle floating forest spores / fireflies effect */
+.forest-fireflies {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: 
+    radial-gradient(2px 2px at 25px 35px, rgba(230, 255, 170, 0.8), rgba(0,0,0,0)),
+    radial-gradient(3px 3px at 85px 120px, rgba(255, 245, 160, 0.7), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 150px 75px, rgba(180, 255, 150, 0.65), rgba(0,0,0,0)),
+    radial-gradient(3px 3px at 240px 190px, rgba(255, 230, 140, 0.75), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 320px 80px, rgba(200, 255, 180, 0.7), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 360px 360px;
+  opacity: 0.45;
+  animation: fireflyFloat 18s ease-in-out infinite alternate;
+}
+
+@keyframes fireflyFloat {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(-15px) translateX(10px);
+  }
+  100% {
+    transform: translateY(-30px) translateX(-10px);
+  }
+}
+
+/* Forest bottom canopy silhouettes */
+.forest-trees-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(14, 30, 16, 0.85) 0%, rgba(14, 30, 16, 0.25) 50%, transparent 100%);
 }

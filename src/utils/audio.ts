@@ -114,6 +114,31 @@ class RetroAudioEngine {
     }
   }
 
+  public playCombo(combo: number) {
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const baseFreq = 523.25 * Math.pow(1.08, Math.min(combo, 10));
+      const notes = [baseFreq, baseFreq * 1.25, baseFreq * 1.5];
+      notes.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        const start = this.ctx.currentTime + idx * 0.06;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.18, start);
+        gain.gain.exponentialRampToValueAtTime(0.005, start + 0.11);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.11);
+      });
+    } catch {
+      // Audio playback failsafe
+    }
+  }
+
   public playWrong() {
     try {
       this.initCtx();

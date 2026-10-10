@@ -35,6 +35,8 @@ export const Stage3Match: React.FC<Stage3MatchProps> = ({
   const [hintPair, setHintPair] = useState<number | null>(null);
   const [alertInfo, setAlertInfo] = useState<{ title: string; msg: string; onConfirm: () => void } | null>(null);
 
+  const totalRounds = Math.ceil(vocabList.length / ROUND_SIZE);
+
   // Load round
   useEffect(() => {
     loadRound(round);
@@ -75,6 +77,8 @@ export const Stage3Match: React.FC<Stage3MatchProps> = ({
     if (selectedCards.length >= 2) return;
 
     soundEngine.playClick();
+    soundEngine.speak(card.origWord);
+
     const newSelected = [...selectedCards, card];
     setSelectedCards(newSelected);
 
@@ -91,32 +95,27 @@ export const Stage3Match: React.FC<Stage3MatchProps> = ({
           // Check round completion
           if (nextMatched.length >= cards.length) {
             const nextRound = round + 1;
-            if (nextRound * ROUND_SIZE >= vocabList.length) {
+            if (nextRound >= totalRounds) {
               onStageClear(hearts);
             } else {
               setRound(nextRound);
             }
           }
-        }, 220);
+        }, 250);
       } else {
         soundEngine.playWrong();
         onWrongMatch(c1.origWord);
         const nextHearts = hearts - 1;
         setHearts(nextHearts);
 
-        if (nextHearts > 0) {
+        setTimeout(() => {
+          setSelectedCards([]);
+        }, 700);
+
+        if (nextHearts <= 0) {
           setAlertInfo({
-            title: '❌ 짝이 맞지 않습니다!',
-            msg: `하트가 1개 차감되었습니다. (남은 기회: ${nextHearts}번)`,
-            onConfirm: () => {
-              setAlertInfo(null);
-              setSelectedCards([]);
-            }
-          });
-        } else {
-          setAlertInfo({
-            title: '❌ 하트 소진!',
-            msg: '하트를 모두 소진하여 3단계를 1라운드부터 다시 시작합니다!',
+            title: '💀 모험 실패!',
+            msg: '하트를 모두 소진했습니다!\n3단계를 처음부터 다시 도전합니다.',
             onConfirm: () => {
               setAlertInfo(null);
               onRestart();
@@ -128,110 +127,136 @@ export const Stage3Match: React.FC<Stage3MatchProps> = ({
   };
 
   const useHint = () => {
-    if (hintsLeft <= 0) return;
+    if (hintsLeft <= 0 || cards.length === 0) return;
     soundEngine.playClick();
     setHintsLeft((prev) => prev - 1);
 
-    // Find first unmatched pair
     const remaining = cards.filter((c) => !matchedUids.includes(c.uid));
     if (remaining.length > 0) {
       const targetId = remaining[0].id;
       setHintPair(targetId);
-      setTimeout(() => setHintPair(null), 1800);
+      setTimeout(() => setHintPair(null), 2500);
     }
   };
 
-  const remainingPairs = (cards.length - matchedUids.length) / 2;
+  const completedPairs = round * ROUND_SIZE + Math.floor(matchedUids.length / 2);
+  const totalPairs = vocabList.length;
+  const progressPercent = Math.min(100, Math.round((completedPairs / totalPairs) * 100));
 
   return (
     <div>
-      {/* NPC Dialogue Box */}
-      <div className="bg-[#FFFDE7] border-3 border-[#FBC02D] rounded-lg p-3 sm:p-4 mb-5 flex items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-[#FF7E00] border-2 border-black rounded-full flex items-center justify-center text-2xl shadow-[2px_2px_0_#000] shrink-0">
-            🧙‍♀️
+      {/* Top Status Bar */}
+      <div className="bg-[#FFF9C4] border-3 border-[#F57F17] rounded-xl p-4 mb-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-xs bg-[#E65100] text-white px-2.5 py-1 rounded font-black font-['DungGeunMo']">
+              3단계: 짝 맞추기
+            </span>
+            <span className="text-sm sm:text-base font-black text-gray-800">
+              전체 39단어 중 {completedPairs}쌍 완료! (라운드 {round + 1} / {totalRounds})
+            </span>
           </div>
-          <div>
-            <div className="text-xs font-black text-[#D46300]">NPC 민경쌤</div>
-            <div className="text-sm font-bold text-gray-900">
-              "영단어와 우리말 뜻 카드를 알맞게 짝지어 보세요!"
+
+          <div className="flex items-center gap-3">
+            {/* Hint Button */}
+            <button
+              onClick={useHint}
+              disabled={hintsLeft <= 0}
+              className={`px-3 py-1.5 rounded-lg border-2 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-[2px_2px_0_#000] cursor-pointer ${
+                hintsLeft > 0
+                  ? 'bg-[#FFEB3B] hover:bg-[#FDD835] text-black border-black active:scale-95'
+                  : 'bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed shadow-none'
+              }`}
+            >
+              <span>💡</span>
+              <span>힌트 ({hintsLeft}회)</span>
+            </button>
+
+            {/* Hearts Live Bar */}
+            <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border-2 border-red-300">
+              <span className="text-xs font-black text-gray-600 mr-1">기회:</span>
+              <span className="text-lg">
+                {'❤️'.repeat(hearts) + '🤍'.repeat(3 - hearts)}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-base tracking-widest text-[#FF4081]">
-            {'❤️'.repeat(hearts)}
-            {'🖤'.repeat(3 - hearts)}
-          </div>
-          <button
-            onClick={useHint}
-            disabled={hintsLeft <= 0}
-            className="px-3 py-1.5 bg-[#FCE868] hover:bg-[#FFD54F] disabled:opacity-50 text-xs font-black text-black border-2 border-black rounded shadow-[1.5px_1.5px_0_#000]"
-          >
-            💡 힌트 ({hintsLeft}/4)
-          </button>
+        {/* Progress Bar for all 39 words */}
+        <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden border border-gray-400 mt-3">
+          <div
+            className="bg-gradient-to-r from-[#FF9800] via-[#FDD835] to-[#4CAF50] h-full transition-all duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* Instructions */}
+        <div className="mt-2 text-xs sm:text-sm font-bold text-gray-600 flex items-center justify-between">
+          <span>💡 파란색 [영어 카드]와 노란색 [우리말 뜻 카드]를 짝지어 터치하세요!</span>
+          <span className="text-xs font-black text-[#E65100]">{progressPercent}% 완료</span>
         </div>
       </div>
 
-      <div className="mb-4 text-xs sm:text-sm font-bold text-gray-700 flex items-center justify-between">
-        <span>
-          📍 라운드 <b className="text-[#D46300] font-['DungGeunMo'] text-base">{round + 1}</b> / 5
-        </span>
-        <span>
-          남은 짝: <b className="text-[#1C2D42] font-['DungGeunMo'] text-base">{remainingPairs}</b>쌍
-        </span>
-      </div>
-
-      {/* Grid of Matching Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Cards Grid: Large, Clear Visuals */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
         {cards.map((card) => {
-          const isMatched = matchedUids.includes(card.uid);
           const isSelected = selectedCards.some((c) => c.uid === card.uid);
-          const isHinted = hintPair === card.id;
+          const isMatched = matchedUids.includes(card.uid);
+          const isHinted = hintPair === card.id && !isMatched;
+
+          let cardStyle = 'bg-white border-[#2C3E50] text-[#1C2D42] hover:border-[#FF9800]';
+          if (card.type === 'word') {
+            cardStyle = 'bg-[#F0F7FF] border-[#1976D2] text-[#0D47A1]';
+          } else {
+            cardStyle = 'bg-[#FFFDE7] border-[#FBC02D] text-[#3E2723]';
+          }
 
           if (isMatched) {
-            return (
-              <div
-                key={card.uid}
-                className="min-h-[64px] border-2 border-dashed border-gray-300 rounded-lg bg-gray-100 opacity-20 pointer-events-none"
-              />
-            );
+            cardStyle = 'bg-[#E8F5E9] border-[#4CAF50] text-[#2E7D32] opacity-50 cursor-default scale-95';
+          } else if (isSelected) {
+            cardStyle = 'bg-[#FFF9C4] border-[#FF8F00] text-[#D84315] shadow-[0_0_0_4px_#FFA000] scale-102';
+          } else if (isHinted) {
+            cardStyle = 'bg-[#FFEB3B] border-[#FF6F00] animate-bounce shadow-[0_0_0_4px_#FF6F00]';
           }
 
           return (
             <button
               key={card.uid}
               onClick={() => handleCardClick(card)}
-              className={`min-h-[64px] p-2.5 rounded-lg border-2 text-center font-bold text-xs sm:text-sm transition-all flex items-center justify-center leading-snug ${
-                isSelected
-                  ? 'bg-[#FF7E00] text-white border-black scale-105 shadow-[2px_2px_0_#000]'
-                  : isHinted
-                  ? 'bg-[#FFEB3B] text-black border-orange-600 scale-105 ring-4 ring-orange-400'
-                  : card.type === 'word'
-                  ? 'bg-[#F3E5F5] text-[#4A148C] border-[#3A516B] hover:-translate-y-0.5 hover:border-purple-600 shadow-[2px_2px_0_rgba(0,0,0,0.1)]'
-                  : 'bg-[#FCE4EC] text-[#880E4F] border-[#3A516B] hover:-translate-y-0.5 hover:border-pink-600 shadow-[2px_2px_0_rgba(0,0,0,0.1)]'
-              }`}
+              disabled={isMatched}
+              className={`p-3.5 sm:p-5 rounded-2xl border-3 text-center font-black transition-all flex flex-col justify-between items-center min-h-[96px] sm:min-h-[110px] active:scale-95 shadow-[3px_3px_0_#1C2D42] cursor-pointer ${cardStyle}`}
             >
-              {card.text}
+              <div className="text-[11px] font-bold opacity-75 mb-1">
+                {card.type === 'word' ? '🔤 영어 단어' : '🇰🇷 우리말 뜻'}
+              </div>
+
+              <div className={`text-base sm:text-xl leading-snug font-['DungGeunMo'] ${isMatched ? 'line-through' : ''}`}>
+                {card.text}
+              </div>
+
+              <div className="text-xs mt-1">
+                {isMatched ? '✓ 완료' : isSelected ? '👉 선택됨' : ''}
+              </div>
             </button>
           );
         })}
       </div>
 
-      {/* In-game Alert Modal */}
+      {/* Alert Modal */}
       {alertInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-[#F7FBFE] border-4 border-[#1C2D42] rounded-xl p-6 w-full max-w-sm text-center shadow-[6px_6px_0_rgba(0,0,0,0.4)]">
-            <h3 className="text-xl font-black text-[#1C2D42] mb-3">{alertInfo.title}</h3>
-            <p className="text-sm font-bold text-gray-800 whitespace-pre-line leading-relaxed mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white border-4 border-[#1C2D42] rounded-2xl p-6 max-w-md w-full text-center shadow-[8px_8px_0_#000]">
+            <h4 className="text-2xl font-black text-[#C62828] mb-3 font-['DungGeunMo']">
+              {alertInfo.title}
+            </h4>
+            <div className="text-base font-bold text-gray-800 whitespace-pre-line mb-6 bg-[#FFFDE7] p-4 rounded-xl border border-amber-300">
               {alertInfo.msg}
-            </p>
+            </div>
             <button
               onClick={alertInfo.onConfirm}
-              className="w-full py-2.5 bg-[#FF9800] hover:bg-[#F57C00] text-white font-black text-sm rounded-lg border-2 border-black shadow-[2px_2px_0_#000]"
+              className="w-full py-3.5 bg-[#FF9800] hover:bg-[#F57C00] text-white border-2 border-black rounded-xl font-black text-lg shadow-[3px_3px_0_#000] cursor-pointer"
             >
-              확인 ✨
+              다시 도전하기 ✨
             </button>
           </div>
         </div>

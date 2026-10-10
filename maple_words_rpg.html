@@ -372,6 +372,28 @@
             <button class="opt-chip" style="padding:2px 6px;" onclick="setStudioBg('kerning')">커닝시티</button>
           </div>
 
+          <!-- HD EXPORT PANEL -->
+          <div style="width:100%; background:#FFF8E1; border:2px solid #FFE082; border-radius:8px; padding:6px; margin:6px 0;">
+            <div style="font-size:11px; font-weight:bold; color:#E65100; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+              <span>📸 캐릭터 내보내기 (Export HD)</span>
+              <span style="font-size:9px; color:#8D6E63;">고해상도 무손실</span>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
+              <button type="button" class="btn-ms" style="font-size:10px; padding:5px 2px; background:#FFF; color:#E65100; display:flex; flex-direction:column; align-items:center;" onclick="exportStudioAvatarPng()">
+                <span style="font-size:14px;">🖼️</span>
+                <span>투명 PNG</span>
+              </button>
+              <button type="button" class="btn-ms" style="font-size:10px; padding:5px 2px; background:#FFF; color:#E65100; display:flex; flex-direction:column; align-items:center;" onclick="exportStudioAvatarSvg()">
+                <span style="font-size:14px;">🎨</span>
+                <span>벡터 SVG</span>
+              </button>
+              <button type="button" class="btn-ms" style="font-size:10px; padding:5px 2px; background:#FFE082; color:#3E2723; display:flex; flex-direction:column; align-items:center;" onclick="exportStudioAdventurerCard()">
+                <span style="font-size:14px;">📇</span>
+                <span>모험가 카드</span>
+              </button>
+            </div>
+          </div>
+
           <div style="width:100%; display:flex; gap:8px; margin-top:auto;">
             <button class="btn-ms" style="flex:1; background:#90A4AE; font-size:12px;" onclick="closeAvatarStudio()">취소</button>
             <button class="btn-ms pixel-font" style="flex:2; font-size:13px;" onclick="saveAvatarStudio()">💾 내 캐릭터로 저장!</button>
@@ -432,8 +454,8 @@
   </header>
 
   <div class="mobile-nav-bar">
-    <button class="mobile-tab-btn" onclick="toggleMobileSidebar('left')">📜 퀘스트 목록</button>
-    <button class="mobile-tab-btn" onclick="toggleMobileSidebar('right')">👤 캐릭터 정보</button>
+    <button class="mobile-tab-btn" onclick="toggleMobileSidebar('left')">📋 수업 진행 단계</button>
+    <button class="mobile-tab-btn" onclick="toggleMobileSidebar('right')">👤 내 캐릭터</button>
   </div>
 
   <!-- 3-Column Persistent Game UI -->
@@ -442,7 +464,7 @@
     <!-- LEFT SIDEBAR: Quest & Stage Log -->
     <div class="ms-panel left-sidebar" id="left-sidebar">
       <div class="ms-panel-header">
-        <span>📜 QUEST LOG</span>
+        <span>📋 수업 진행 단계</span>
         <span style="font-size:10px; background:var(--ms-yellow); color:#000; padding:1px 5px; border-radius:3px;">L.06</span>
       </div>
       <div id="quest-list-container">
@@ -704,7 +726,7 @@
     <!-- RIGHT SIDEBAR: Character Profile -->
     <div class="ms-panel right-sidebar" id="right-sidebar">
       <div class="ms-panel-header">
-        <span>👤 CHARACTER</span>
+        <span>👤 내 캐릭터</span>
         <span class="pixel-font" style="font-size:11px; color:var(--ms-yellow);" id="sidebar-level-text">Lv.1</span>
       </div>
       
@@ -747,8 +769,8 @@
 
   </div>
 
-  <footer style="text-align:center; padding:15px; font-size:12px; color:#37474F; font-weight:bold;">
-    🎉 Maple Words RPG // Modular Avatar Creator & Lesson 6 // Curated by 민경쌤 💖
+  <footer style="text-align:center; padding:18px; font-size:13px; color:#37474F; font-weight:900;">
+    made by 민경쌤
   </footer>
 
   <button style="position:fixed; bottom:10px; right:10px; background:white; border:2px solid var(--ms-black); padding:3px 8px; font-size:11px; cursor:pointer; border-radius:3px; font-weight:bold;" onclick="openAdmin()">🔑 교사모드</button>
@@ -851,176 +873,879 @@
     const EYE_PALETTES = ['#1976D2', '#388E3C', '#D32F2F', '#FFA000', '#7B1FA2', '#212121', '#5D4037', '#00ACC1'];
     const SKIN_COLORS = { fair: '#FFE8D6', peach: '#FFDFBA', porcelain: '#FFF3E0', tan: '#E0BB95', chocolate: '#8D6E63', slime_green: '#B2FF59', lilac: '#E1BEE7' };
 
-    function generateAvatarSvg(cfg, options = {}) {
-      const size = options.size || 140;
-      const animClass = options.anim === 'run' ? 'anim-run' : options.anim === 'idle' ? 'anim-idle' : '';
-      const skin = SKIN_COLORS[cfg.skinTone] || '#FFE8D6';
-      const hairColor = cfg.hairColor || '#4E342E';
-      const eyeColor = cfg.eyeColor || '#1976D2';
-      const topColor = cfg.topColor || '#E53935';
-      const bottomColor = cfg.bottomColor || '#1976D2';
-      const hatColor = cfg.hatColor || '#E53935';
+    function getDarkerShade(hex, amount) {
+      if (amount === undefined) amount = 0.2;
+      try {
+        var clean = (hex || '#000000').replace('#', '');
+        if (clean.length === 3) {
+          clean = clean.split('').map(function(c) { return c + c; }).join('');
+        }
+        var num = parseInt(clean, 16);
+        var r = Math.max(0, Math.floor(((num >> 16) & 0xff) * (1 - amount)));
+        var g = Math.max(0, Math.floor(((num >> 8) & 0xff) * (1 - amount)));
+        var b = Math.max(0, Math.floor((num & 0xff) * (1 - amount)));
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      } catch (e) {
+        return '#111827';
+      }
+    }
 
-      let out = `<svg viewBox="0 0 200 240" width="${size}" height="${size}" class="${animClass}" xmlns="http://www.w3.org/2000/svg" style="image-rendering:crisp-edges; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.15));">`;
+    function renderBackgroundEffectSvg(effect) {
+      if (effect === 'holy_glow') {
+        return '<circle cx="100" cy="120" r="75" fill="url(#holyGlowGrad)" />';
+      }
+      if (effect === 'fire_aura') {
+        return '<g opacity="0.65">' +
+          '<path d="M60 210 Q40 140 70 110 Q90 150 100 80 Q120 130 140 100 Q160 150 135 210 Z" fill="#FF5722" />' +
+          '<path d="M75 210 Q60 160 85 130 Q100 160 105 110 Q120 150 130 130 Q145 170 125 210 Z" fill="#FFEB3B" />' +
+          '</g>';
+      }
+      return '';
+    }
 
-      // 1. Cape & Wings Back
-      if (cfg.cape === 'angel_wings') {
-        out += `<path d="M75 135 C40 115 15 80 20 45 C35 55 50 80 58 100 C48 70 65 50 80 65 C85 85 85 115 82 135 Z" fill="#E0F7FA" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<path d="M125 135 C160 115 185 80 180 45 C165 55 150 80 142 100 C152 70 135 50 120 65 C115 85 115 115 118 135 Z" fill="#E0F7FA" stroke="#111827" stroke-width="2.5"/>`;
-      } else if (cfg.cape === 'red_adventurer_cape') {
-        out += `<path d="M68 130 Q50 180 48 200 Q78 190 100 198 Q122 190 152 200 Q150 180 132 130 Z" fill="#C62828" stroke="#111827" stroke-width="2.5"/>`;
-      } else if (cfg.cape === 'demon_wings') {
-        out += `<path d="M75 140 C35 120 10 70 15 40 C35 58 55 65 60 75 C45 60 70 50 82 70 C70 95 78 120 80 140 Z" fill="#263238" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<path d="M125 140 C165 120 190 70 185 40 C165 58 145 65 140 75 C155 60 130 50 118 70 C130 95 122 120 120 140 Z" fill="#263238" stroke="#111827" stroke-width="2.5"/>`;
+    function renderCapeSvg(cape) {
+      if (cape === 'angel_wings') {
+        return '<g>' +
+          '<path d="M75 135 C40 115 15 80 20 45 C35 55 50 80 58 100 C48 70 65 50 80 65 C85 85 85 115 82 135 Z" fill="url(#wingGradient)" stroke="#37474F" stroke-width="2.5" stroke-linejoin="round" />' +
+          '<path d="M125 135 C160 115 185 80 180 45 C165 55 150 80 142 100 C152 70 135 50 120 65 C115 85 115 115 118 135 Z" fill="url(#wingGradient)" stroke="#37474F" stroke-width="2.5" stroke-linejoin="round" />' +
+          '</g>';
+      }
+      if (cape === 'demon_wings') {
+        return '<g>' +
+          '<path d="M75 140 C35 120 10 70 15 40 C35 58 55 65 60 75 C45 60 70 50 82 70 C70 95 78 120 80 140 Z" fill="url(#demonWingGrad)" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M125 140 C165 120 190 70 185 40 C165 58 145 65 140 75 C155 60 130 50 118 70 C130 95 122 120 120 140 Z" fill="url(#demonWingGrad)" stroke="#111827" stroke-width="2.5" />' +
+          '</g>';
+      }
+      if (cape === 'fairy_wings') {
+        return '<g opacity="0.85">' +
+          '<ellipse cx="50" cy="115" rx="35" ry="48" fill="#E1F5FE" stroke="#81D4FA" stroke-width="2.5" transform="rotate(-25 50 115)" />' +
+          '<ellipse cx="150" cy="115" rx="35" ry="48" fill="#E1F5FE" stroke="#81D4FA" stroke-width="2.5" transform="rotate(25 150 115)" />' +
+          '<ellipse cx="65" cy="148" rx="20" ry="28" fill="#F3E5F5" stroke="#CE93D8" stroke-width="2" transform="rotate(-35 65 148)" />' +
+          '<ellipse cx="135" cy="148" rx="20" ry="28" fill="#F3E5F5" stroke="#CE93D8" stroke-width="2" transform="rotate(35 135 148)" />' +
+          '</g>';
+      }
+      if (cape === 'red_adventurer_cape') {
+        return '<path d="M68 130 Q50 180 48 200 Q78 190 100 198 Q122 190 152 200 Q150 180 132 130 Z" fill="#C62828" stroke="#111827" stroke-width="2.5" />';
+      }
+      if (cape === 'slime_backpack') {
+        return '<g>' +
+          '<ellipse cx="100" cy="145" rx="36" ry="32" fill="#69F0AE" stroke="#1B5E20" stroke-width="2.5" />' +
+          '<circle cx="88" cy="140" r="4" fill="#111827" />' +
+          '<circle cx="112" cy="140" r="4" fill="#111827" />' +
+          '<ellipse cx="100" cy="148" rx="5" ry="3" fill="#00E676" />' +
+          '</g>';
+      }
+      if (cape === 'star_cape') {
+        return '<g>' +
+          '<path d="M68 130 Q45 175 42 205 Q70 195 100 202 Q130 195 158 205 Q155 175 132 130 Z" fill="#1A237E" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="70" cy="170" r="2" fill="#FFD54F" />' +
+          '<circle cx="130" cy="175" r="2.5" fill="#FFD54F" />' +
+          '<circle cx="100" cy="185" r="3" fill="#FFF59D" />' +
+          '<circle cx="85" cy="192" r="1.5" fill="#FFF" />' +
+          '</g>';
+      }
+      return '';
+    }
+
+    function renderHairBackSvg(hairBack, color, shade) {
+      if (hairBack === 'none') return '';
+      if (hairBack === 'long_straight') {
+        return '<path d="M52 80 C40 120 44 175 48 205 C75 208 125 208 152 205 C156 175 160 120 148 80 Z" fill="' + color + '" stroke="#111827" stroke-width="3" stroke-linejoin="round" />';
+      }
+      if (hairBack === 'twin_tails') {
+        return '<g>' +
+          '<path d="M54 75 C25 80 15 130 22 185 C32 185 45 160 48 135 C52 110 56 90 54 75 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<circle cx="48" cy="85" r="6" fill="#FF4081" stroke="#111827" stroke-width="2" />' +
+          '<path d="M146 75 C175 80 185 130 178 185 C168 185 155 160 152 135 C148 110 144 90 146 75 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<circle cx="152" cy="85" r="6" fill="#FF4081" stroke="#111827" stroke-width="2" />' +
+          '</g>';
+      }
+      if (hairBack === 'high_ponytail') {
+        return '<g>' +
+          '<path d="M125 55 C160 40 185 90 165 160 C152 160 145 125 138 90 C135 75 130 65 125 55 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<ellipse cx="128" cy="58" rx="8" ry="5" fill="#E91E63" stroke="#111827" stroke-width="2" transform="rotate(-30 128 58)" />' +
+          '</g>';
+      }
+      if (hairBack === 'wavy_cascade') {
+        return '<g>' +
+          '<path d="M50 80 Q35 120 40 150 Q48 175 35 200 C70 205 130 205 165 200 Q152 175 160 150 Q165 120 150 80 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<path d="M55 140 Q65 160 60 185" stroke="' + shade + '" stroke-width="2.5" fill="none" />' +
+          '<path d="M145 140 Q135 160 140 185" stroke="' + shade + '" stroke-width="2.5" fill="none" />' +
+          '</g>';
+      }
+      if (hairBack === 'spiky_anime') {
+        return '<path d="M45 70 L30 85 L42 98 L22 120 L40 130 L32 155 L58 150 L65 170 L80 155 L100 175 L120 155 L135 170 L142 150 L168 155 L160 130 L178 120 L158 98 L170 85 L155 70 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairBack === 'bob_cut') {
+        return '<path d="M48 75 C42 105 45 140 56 150 C75 153 125 153 144 150 C155 140 158 105 152 75 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairBack === 'braided_side') {
+        return '<g>' +
+          '<path d="M52 80 C45 100 48 135 52 155 C75 158 125 158 148 155 C152 135 155 100 148 80 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<path d="M142 120 Q160 140 155 160 Q170 175 160 195 Q152 205 156 210 Q148 200 146 185 Q140 165 138 140 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="154" cy="204" r="3.5" fill="#FF4081" />' +
+          '</g>';
+      }
+      if (hairBack === 'wolf_cut') {
+        return '<path d="M48 75 L38 110 L48 125 L35 155 L58 160 L62 180 L80 165 L100 185 L120 165 L138 180 L142 160 L165 155 L152 125 L162 110 L152 75 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairBack === 'twin_buns') {
+        return '<g>' +
+          '<circle cx="45" cy="50" r="18" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<circle cx="155" cy="50" r="18" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<circle cx="45" cy="50" r="20" fill="none" stroke="#FF4081" stroke-width="3" stroke-dasharray="4 2" />' +
+          '<circle cx="155" cy="50" r="20" fill="none" stroke="#FF4081" stroke-width="3" stroke-dasharray="4 2" />' +
+          '</g>';
+      }
+      return '<path d="M50 75 C45 95 48 120 54 135 C70 138 130 138 146 135 C152 120 155 95 150 75 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+    }
+
+    function renderCreatureBackSvg(baseType) {
+      if (baseType === 'cat') {
+        return '<path d="M120 175 Q155 180 165 155 Q172 135 158 125 Q150 132 155 145 Q145 160 125 168 Z" fill="#FFB74D" stroke="#111827" stroke-width="2.5" />';
+      }
+      if (baseType === 'demon') {
+        return '<path d="M122 175 Q160 185 165 155 L175 150 L162 142 L160 148 Q145 162 124 168 Z" fill="#D32F2F" stroke="#111827" stroke-width="2.5" />';
+      }
+      return '';
+    }
+
+    function renderBaseBodySvg(skinColor, skinShade, pose) {
+      var arms = pose === 'victory'
+        ? '<path d="M72 128 Q50 105 45 80" stroke="' + skinColor + '" stroke-width="14" stroke-linecap="round" />' +
+          '<path d="M72 128 Q50 105 45 80" stroke="#111827" stroke-width="2.5" fill="none" />' +
+          '<circle cx="45" cy="80" r="8" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M128 128 Q150 105 155 80" stroke="' + skinColor + '" stroke-width="14" stroke-linecap="round" />' +
+          '<path d="M128 128 Q150 105 155 80" stroke="#111827" stroke-width="2.5" fill="none" />' +
+          '<circle cx="155" cy="80" r="8" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />'
+        : '<path d="M74 126 Q58 140 60 160" stroke="' + skinColor + '" stroke-width="13" stroke-linecap="round" />' +
+          '<path d="M74 126 Q58 140 60 160" stroke="#111827" stroke-width="2.5" fill="none" />' +
+          '<circle cx="60" cy="160" r="7.5" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M126 126 Q142 140 140 160" stroke="' + skinColor + '" stroke-width="13" stroke-linecap="round" />' +
+          '<path d="M126 126 Q142 140 140 160" stroke="#111827" stroke-width="2.5" fill="none" />' +
+          '<circle cx="140" cy="160" r="7.5" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />';
+
+      return '<g id="base-body">' +
+        '<rect x="91" y="112" width="18" height="15" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+        '<rect x="76" y="165" width="18" height="28" rx="8" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+        '<rect x="106" y="165" width="18" height="28" rx="8" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+        '<path d="M72 122 Q100 120 128 122 L124 170 Q100 173 76 170 Z" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+        arms +
+        '</g>';
+    }
+
+    function renderShoesSvg(shoes, color, shade, pose) {
+      if (shoes === 'none') return '';
+      if (shoes === 'sneakers') {
+        return '<g>' +
+          '<path d="M72 186 Q72 180 84 180 Q96 180 96 186 L96 202 Q84 205 70 202 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<rect x="70" y="198" width="26" height="5" rx="2" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<line x1="78" y1="188" x2="88" y2="188" stroke="#111827" stroke-width="1.5" />' +
+          '<path d="M104 186 Q104 180 116 180 Q128 180 128 186 L130 202 Q116 205 104 202 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<rect x="104" y="198" width="26" height="5" rx="2" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<line x1="112" y1="188" x2="122" y2="188" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (shoes === 'leather_boots' || shoes === 'combat_boots') {
+        return '<g>' +
+          '<path d="M72 175 L96 175 L96 203 Q84 206 68 203 L70 185 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M104 175 L128 175 L130 185 L132 203 Q116 206 104 203 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<line x1="74" y1="182" x2="94" y2="182" stroke="#FFD54F" stroke-width="2" />' +
+          '<line x1="106" y1="182" x2="126" y2="182" stroke="#FFD54F" stroke-width="2" />' +
+          '</g>';
+      }
+      if (shoes === 'rabbit_slippers') {
+        return '<g>' +
+          '<ellipse cx="82" cy="198" rx="14" ry="9" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="76" cy="190" rx="3" ry="7" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<ellipse cx="86" cy="190" rx="3" ry="7" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="82" cy="198" r="2" fill="#FF80AB" />' +
+          '<ellipse cx="118" cy="198" rx="14" ry="9" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="112" cy="190" rx="3" ry="7" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<ellipse cx="122" cy="190" rx="3" ry="7" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="118" cy="198" r="2" fill="#FF80AB" />' +
+          '</g>';
+      }
+      if (shoes === 'mary_janes') {
+        return '<g>' +
+          '<rect x="74" y="172" width="20" height="15" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<rect x="106" y="172" width="20" height="15" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<ellipse cx="83" cy="198" rx="13" ry="7" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="117" cy="198" rx="13" ry="7" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<line x1="74" y1="196" x2="92" y2="196" stroke="#FFFFFF" stroke-width="1.5" />' +
+          '<line x1="108" y1="196" x2="126" y2="196" stroke="#FFFFFF" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (shoes === 'wing_shoes') {
+        return '<g>' +
+          '<path d="M72 184 Q84 178 96 184 L96 202 Q84 205 70 202 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M104 184 Q116 178 128 184 L130 202 Q116 205 104 202 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M66 185 Q56 175 62 170 Q70 178 68 186 Z" fill="#FFF" stroke="#111827" stroke-width="1.5" />' +
+          '<path d="M134 185 Q144 175 138 170 Q130 178 132 186 Z" fill="#FFF" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      return '';
+    }
+
+    function renderBottomSvg(bottom, color, shade, pose) {
+      if (bottom === 'none') return '';
+      if (bottom === 'pleated_skirt') {
+        return '<g>' +
+          '<path d="M74 150 Q100 148 126 150 L136 176 Q100 182 64 176 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<line x1="82" y1="150" x2="78" y2="176" stroke="' + shade + '" stroke-width="2" />' +
+          '<line x1="94" y1="150" x2="92" y2="178" stroke="' + shade + '" stroke-width="2" />' +
+          '<line x1="106" y1="150" x2="108" y2="178" stroke="' + shade + '" stroke-width="2" />' +
+          '<line x1="118" y1="150" x2="122" y2="176" stroke="' + shade + '" stroke-width="2" />' +
+          '</g>';
+      }
+      if (bottom === 'frill_skirt') {
+        return '<g>' +
+          '<path d="M74 150 Q100 148 126 150 L134 166 Q100 170 66 166 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M66 165 Q100 168 134 165 L138 180 Q100 186 62 180 Z" fill="' + shade + '" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="100" cy="154" r="3" fill="#FFF" />' +
+          '</g>';
+      }
+      if (bottom === 'denim_shorts' || bottom === 'track_shorts') {
+        return '<g>' +
+          '<path d="M74 150 Q100 148 126 150 L128 172 L110 172 L100 162 L90 172 L72 172 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<line x1="100" y1="150" x2="100" y2="160" stroke="#FFD54F" stroke-width="1.5" />' +
+          '<path d="M78 156 Q84 162 90 156" stroke="#FFD54F" stroke-width="1.5" fill="none" />' +
+          '<path d="M110 156 Q116 162 122 156" stroke="#FFD54F" stroke-width="1.5" fill="none" />' +
+          '</g>';
+      }
+      if (bottom === 'cargo_pants' || bottom === 'school_trousers' || bottom === 'adventurer_pants') {
+        var cargoExtras = bottom === 'cargo_pants'
+          ? '<rect x="73" y="166" width="10" height="12" rx="2" fill="' + shade + '" stroke="#111827" stroke-width="1.5" />' +
+            '<rect x="117" y="166" width="10" height="12" rx="2" fill="' + shade + '" stroke="#111827" stroke-width="1.5" />'
+          : '';
+        return '<g>' +
+          '<path d="M74 150 Q100 148 126 150 L128 190 L108 190 L100 162 L92 190 L72 190 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<rect x="73" y="148" width="54" height="6" fill="#4E342E" stroke="#111827" stroke-width="1.5" />' +
+          '<rect x="96" y="147" width="8" height="8" fill="#FFD54F" stroke="#111827" stroke-width="1.5" />' +
+          cargoExtras +
+          '</g>';
+      }
+      return '';
+    }
+
+    function renderTopSvg(top, color, shade) {
+      if (top === 'none') return '';
+      if (top === 'maple_tee') {
+        return '<g>' +
+          '<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Q100 120 72 122 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<g transform="translate(100, 138) scale(0.7)">' +
+          '<path d="M0 -12 L3 -5 L10 -8 L7 -1 L13 2 L7 5 L9 11 L3 8 L0 14 L-3 8 L-9 11 L-7 5 L-13 2 L-7 -1 L-10 -8 L-3 -5 Z" fill="#FFD54F" stroke="#111827" stroke-width="1.5" />' +
+          '</g>' +
+          '</g>';
+      }
+      if (top === 'sailor_uniform') {
+        return '<g>' +
+          '<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Q100 120 72 122 Z" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<polygon points="80,122 100,140 120,122 128,124 100,148 72,124" fill="' + color + '" stroke="#111827" stroke-width="2" />' +
+          '<polygon points="96,140 104,140 106,150 100,146 94,150" fill="#E53935" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (top === 'cozy_hoodie') {
+        return '<g>' +
+          '<path d="M70 120 L56 138 L65 146 L74 136 L74 154 Q100 157 126 154 L126 136 L135 146 L144 138 L130 120 Q100 117 70 120 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M85 142 L115 142 L120 154 L80 154 Z" fill="' + shade + '" stroke="#111827" stroke-width="2" />' +
+          '<line x1="94" y1="125" x2="94" y2="136" stroke="#FFFFFF" stroke-width="2" />' +
+          '<line x1="106" y1="125" x2="106" y2="136" stroke="#FFFFFF" stroke-width="2" />' +
+          '</g>';
+      }
+      if (top === 'knight_armor') {
+        return '<g>' +
+          '<path d="M72 122 L58 136 L68 144 L75 136 L75 152 Q100 155 125 152 L125 136 L132 144 L142 136 L128 122 Q100 118 72 122 Z" fill="#CFD8DC" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M82 126 L100 144 L118 126 L114 148 L100 152 L86 148 Z" fill="#ECEFF1" stroke="#37474F" stroke-width="2" />' +
+          '<circle cx="100" cy="138" r="4.5" fill="#FFD54F" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (top === 'striped_sweater') {
+        return '<g>' +
+          '<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Q100 120 72 122 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<rect x="75" y="128" width="50" height="5" fill="#FFFFFF" />' +
+          '<rect x="75" y="139" width="50" height="5" fill="#FFFFFF" />' +
+          '<rect x="75" y="148" width="50" height="4" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (top === 'magician_robe') {
+        return '<g>' +
+          '<path d="M70 120 L52 140 L62 148 L74 136 L72 154 Q100 157 128 154 L126 136 L138 148 L148 140 L130 120 Q100 116 70 120 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<line x1="100" y1="120" x2="100" y2="154" stroke="#FFD54F" stroke-width="2.5" />' +
+          '<polygon points="100,126 103,132 109,132 104,136 106,142 100,138 94,142 96,136 91,132 97,132" fill="#FFD54F" />' +
+          '</g>';
+      }
+      if (top === 'streetwear_jacket') {
+        return '<g>' +
+          '<path d="M70 120 L54 136 L64 146 L74 136 L74 154 Q100 157 126 154 L126 136 L136 146 L146 136 L130 120 Q100 118 70 120 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<polygon points="90,120 110,120 100,146" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '<line x1="74" y1="135" x2="100" y2="154" stroke="#00E676" stroke-width="2" />' +
+          '</g>';
+      }
+      if (top === 'gothic_blouse') {
+        return '<g>' +
+          '<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Q100 120 72 122 Z" fill="#212121" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M85 124 Q100 138 115 124" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '<path d="M88 132 Q100 144 112 132" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '<circle cx="100" cy="130" r="3.5" fill="#E91E63" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (top === 'summer_tank') {
+        return '<path d="M80 122 L75 136 L75 152 Q100 154 125 152 L125 136 L120 122 Q100 126 80 122 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />';
+      }
+      return '';
+    }
+
+    function renderHeadBaseSvg(skinColor, skinShade, baseType) {
+      var ears = '';
+      if (baseType === 'elf') {
+        ears = '<path d="M56 82 Q32 68 28 54 Q44 68 56 74 Z" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+               '<path d="M144 82 Q168 68 172 54 Q156 68 144 74 Z" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />';
+      } else if (baseType === 'cat') {
+        ears = '<polygon points="48,50 32,15 68,36" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+               '<polygon points="46,46 36,22 62,37" fill="#FF80AB" />' +
+               '<polygon points="152,50 168,15 132,36" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+               '<polygon points="154,46 164,22 138,37" fill="#FF80AB" />';
+      } else if (baseType === 'bunny') {
+        ears = '<ellipse cx="62" cy="20" rx="9" ry="24" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" transform="rotate(-10 62 20)" />' +
+               '<ellipse cx="62" cy="20" rx="5" ry="18" fill="#FF80AB" transform="rotate(-10 62 20)" />' +
+               '<ellipse cx="138" cy="20" rx="9" ry="24" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" transform="rotate(10 138 20)" />' +
+               '<ellipse cx="138" cy="20" rx="5" ry="18" fill="#FF80AB" transform="rotate(10 138 20)" />';
+      } else if (baseType === 'demon') {
+        ears = '<path d="M60 48 Q40 25 45 12 Q58 24 64 42 Z" fill="#D32F2F" stroke="#111827" stroke-width="2.5" />' +
+               '<path d="M140 48 Q160 25 155 12 Q142 24 136 42 Z" fill="#D32F2F" stroke="#111827" stroke-width="2.5" />';
+      } else if (baseType === 'human') {
+        ears = '<ellipse cx="53" cy="80" rx="7" ry="9" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />' +
+               '<ellipse cx="147" cy="80" rx="7" ry="9" fill="' + skinColor + '" stroke="#111827" stroke-width="2.5" />';
       }
 
-      // 2. Rear Hair
-      if (cfg.hairBack === 'long_straight') {
-        out += `<path d="M52 80 C40 120 44 175 48 205 C75 208 125 208 152 205 C156 175 160 120 148 80 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-      } else if (cfg.hairBack === 'twin_tails') {
-        out += `<path d="M54 75 C25 80 15 130 22 185 C32 185 45 160 48 135 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-        out += `<circle cx="48" cy="85" r="5" fill="#FF4081" stroke="#111827" stroke-width="2"/>`;
-        out += `<path d="M146 75 C175 80 185 130 178 185 C168 185 155 160 152 135 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-        out += `<circle cx="152" cy="85" r="5" fill="#FF4081" stroke="#111827" stroke-width="2"/>`;
-      } else if (cfg.hairBack === 'high_ponytail') {
-        out += `<path d="M125 55 C160 40 185 90 165 160 C152 160 145 125 138 90 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-      } else if (cfg.hairBack === 'bob_cut') {
-        out += `<path d="M48 75 C42 105 45 140 56 150 C75 153 125 153 144 150 C155 140 158 105 152 75 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-      } else {
-        out += `<path d="M50 75 C45 95 48 120 54 135 C70 138 130 138 146 135 C152 120 155 95 150 75 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      return '<g id="head-base">' +
+        ears +
+        '<path d="M54 74 C50 40 70 32 100 32 C130 32 150 40 146 74 C148 104 128 116 100 116 C72 116 52 104 54 74 Z" fill="' + skinColor + '" stroke="#111827" stroke-width="3.2" stroke-linejoin="round" />' +
+        '</g>';
+    }
+
+    function renderBlushSvg(blush) {
+      if (blush === 'none') return '';
+      if (blush === 'soft_pink' || blush === 'subtle_peach') {
+        var col = blush === 'subtle_peach' ? '#FFAB91' : '#FF80AB';
+        return '<g opacity="0.6">' +
+          '<ellipse cx="72" cy="88" rx="9" ry="5.5" fill="' + col + '" />' +
+          '<ellipse cx="128" cy="88" rx="9" ry="5.5" fill="' + col + '" />' +
+          '</g>';
       }
-
-      // 3. Ground Shadow
-      out += `<ellipse cx="100" cy="214" rx="44" ry="10" fill="rgba(17,27,39,0.2)"/>`;
-
-      // 4. Base Body & Limbs
-      out += `<rect x="91" y="112" width="18" height="15" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      out += `<rect x="76" y="165" width="18" height="28" rx="8" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      out += `<rect x="106" y="165" width="18" height="28" rx="8" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      out += `<path d="M72 122 Q100 120 128 122 L124 170 Q100 173 76 170 Z" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      out += `<path d="M74 126 Q58 140 60 160" stroke="${skin}" stroke-width="12" stroke-linecap="round"/>`;
-      out += `<path d="M74 126 Q58 140 60 160" stroke="#111827" stroke-width="2.5" fill="none"/>`;
-      out += `<circle cx="60" cy="160" r="7" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      out += `<path d="M126 126 Q142 140 140 160" stroke="${skin}" stroke-width="12" stroke-linecap="round"/>`;
-      out += `<path d="M126 126 Q142 140 140 160" stroke="#111827" stroke-width="2.5" fill="none"/>`;
-      out += `<circle cx="140" cy="160" r="7" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-
-      // 5. Shoes
-      out += `<path d="M72 186 Q84 180 96 186 L96 202 Q84 205 70 202 Z" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
-      out += `<path d="M104 186 Q116 180 128 186 L130 202 Q116 205 104 202 Z" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
-
-      // 6. Bottoms
-      if (cfg.bottom === 'pleated_skirt') {
-        out += `<path d="M74 150 Q100 148 126 150 L136 176 Q100 182 64 176 Z" fill="${bottomColor}" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<line x1="86" y1="150" x2="82" y2="176" stroke="#000" stroke-width="1.5" opacity="0.3"/>`;
-        out += `<line x1="114" y1="150" x2="118" y2="176" stroke="#000" stroke-width="1.5" opacity="0.3"/>`;
-      } else {
-        out += `<path d="M74 150 Q100 148 126 150 L128 172 L110 172 L100 162 L90 172 L72 172 Z" fill="${bottomColor}" stroke="#111827" stroke-width="2.5"/>`;
+      if (blush === 'heart_blush') {
+        return '<g transform="scale(0.85)">' +
+          '<path d="M85 96 C85 90 92 88 95 93 C98 88 105 90 105 96 C105 102 95 108 95 108 C95 108 85 102 85 96 Z" fill="#FF4081" />' +
+          '<path d="M140 96 C140 90 147 88 150 93 C153 88 160 90 160 96 C160 102 150 108 150 108 C150 108 140 102 140 96 Z" fill="#FF4081" />' +
+          '</g>';
       }
+      if (blush === 'anime_lines') {
+        return '<g stroke="#FF4081" stroke-width="2" stroke-linecap="round">' +
+          '<line x1="68" y1="84" x2="64" y2="92" />' +
+          '<line x1="73" y1="84" x2="69" y2="92" />' +
+          '<line x1="78" y1="84" x2="74" y2="92" />' +
+          '<line x1="122" y1="84" x2="126" y2="92" />' +
+          '<line x1="127" y1="84" x2="131" y2="92" />' +
+          '<line x1="132" y1="84" x2="136" y2="92" />' +
+          '</g>';
+      }
+      return '';
+    }
 
-      // 7. Tops
-      if (cfg.top === 'sailor_uniform') {
-        out += `<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Z" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<polygon points="80,122 100,140 120,122 128,124 100,148 72,124" fill="${topColor}" stroke="#111827" stroke-width="2"/>`;
-        out += `<polygon points="96,140 104,140 106,150 100,146 94,150" fill="#E53935" stroke="#111827" stroke-width="1.5"/>`;
-      } else if (cfg.top === 'knight_armor') {
-        out += `<path d="M72 122 L58 136 L68 144 L75 136 L75 152 Q100 155 125 152 L125 136 L132 144 L142 136 L128 122 Z" fill="#CFD8DC" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<circle cx="100" cy="138" r="4.5" fill="#FFD54F" stroke="#111827" stroke-width="1.5"/>`;
-      } else {
-        out += `<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Z" fill="${topColor}" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<polygon points="100,132 102,136 106,136 103,139 104,143 100,141 96,143 97,139 94,136 98,136" fill="#FFD54F"/>`;
+    function renderEyebrowsSvg(eyebrows) {
+      if (eyebrows === 'curved') {
+        return '<g stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none">' +
+          '<path d="M72 65 Q81 60 90 64" />' +
+          '<path d="M110 64 Q119 60 128 65" />' +
+          '</g>';
       }
+      if (eyebrows === 'sharp') {
+        return '<g stroke="#111827" stroke-width="3" stroke-linecap="round" fill="none">' +
+          '<line x1="72" y1="66" x2="91" y2="62" />' +
+          '<line x1="109" y1="62" x2="128" y2="66" />' +
+          '</g>';
+      }
+      if (eyebrows === 'worried') {
+        return '<g stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none">' +
+          '<path d="M72 61 Q81 65 90 64" />' +
+          '<path d="M110 64 Q119 65 128 61" />' +
+          '</g>';
+      }
+      if (eyebrows === 'thick') {
+        return '<g stroke="#111827" stroke-width="4.5" stroke-linecap="round" fill="none">' +
+          '<line x1="72" y1="64" x2="90" y2="64" />' +
+          '<line x1="110" y1="64" x2="128" y2="64" />' +
+          '</g>';
+      }
+      if (eyebrows === 'short_dots') {
+        return '<g fill="#111827"><circle cx="81" cy="63" r="3" /><circle cx="119" cy="63" r="3" /></g>';
+      }
+      return '';
+    }
 
-      // 8. Head & Species Ears
-      if (cfg.baseType === 'elf') {
-        out += `<path d="M56 82 Q32 68 28 54 Q44 68 56 74 Z" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<path d="M144 82 Q168 68 172 54 Q156 68 144 74 Z" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      } else if (cfg.baseType === 'cat') {
-        out += `<polygon points="48,50 32,15 68,36" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<polygon points="152,50 168,15 132,36" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-      } else {
-        out += `<ellipse cx="53" cy="80" rx="7" ry="9" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<ellipse cx="147" cy="80" rx="7" ry="9" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+    function renderEyesSvg(eyes, eyeColor) {
+      if (eyes === 'wink') {
+        return '<g id="wink-eyes">' +
+          '<ellipse cx="80" cy="78" rx="9" ry="12" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="80" cy="79" rx="6.5" ry="9" fill="' + eyeColor + '" />' +
+          '<circle cx="78" cy="76" r="3" fill="#FFFFFF" />' +
+          '<circle cx="82" cy="82" r="1.5" fill="#FFFFFF" />' +
+          '<path d="M112 78 Q120 72 128 78" stroke="#111827" stroke-width="3.5" stroke-linecap="round" fill="none" />' +
+          '<line x1="128" y1="78" x2="133" y2="74" stroke="#111827" stroke-width="3" stroke-linecap="round" />' +
+          '</g>';
       }
-      out += `<path d="M54 74 C50 40 70 32 100 32 C130 32 150 40 146 74 C148 104 128 116 100 116 C72 116 52 104 54 74 Z" fill="${skin}" stroke="#111827" stroke-width="3.2"/>`;
+      if (eyes === 'cat_eyes') {
+        return '<g id="cat-eyes">' +
+          '<ellipse cx="80" cy="77" rx="9.5" ry="10" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="80" cy="77" rx="5" ry="9" fill="' + eyeColor + '" />' +
+          '<ellipse cx="80" cy="77" rx="2" ry="7" fill="#111827" />' +
+          '<circle cx="78" cy="73" r="2.5" fill="#FFFFFF" />' +
+          '<ellipse cx="120" cy="77" rx="9.5" ry="10" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="120" cy="77" rx="5" ry="9" fill="' + eyeColor + '" />' +
+          '<ellipse cx="120" cy="77" rx="2" ry="7" fill="#111827" />' +
+          '<circle cx="118" cy="73" r="2.5" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (eyes === 'sleepy') {
+        return '<g id="sleepy-eyes">' +
+          '<ellipse cx="80" cy="79" rx="9" ry="8" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="80" cy="81" rx="6" ry="6" fill="' + eyeColor + '" />' +
+          '<path d="M70 76 Q80 72 90 76" stroke="#111827" stroke-width="3.5" fill="none" />' +
+          '<ellipse cx="120" cy="79" rx="9" ry="8" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="120" cy="81" rx="6" ry="6" fill="' + eyeColor + '" />' +
+          '<path d="M110 76 Q120 72 130 76" stroke="#111827" stroke-width="3.5" fill="none" />' +
+          '</g>';
+      }
+      if (eyes === 'round_cute') {
+        return '<g id="round-cute-eyes">' +
+          '<circle cx="80" cy="78" r="9" fill="#111827" />' +
+          '<circle cx="78" cy="75" r="3.5" fill="#FFFFFF" />' +
+          '<circle cx="83" cy="81" r="1.5" fill="#FFFFFF" />' +
+          '<circle cx="120" cy="78" r="9" fill="#111827" />' +
+          '<circle cx="118" cy="75" r="3.5" fill="#FFFFFF" />' +
+          '<circle cx="123" cy="81" r="1.5" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (eyes === 'battle') {
+        return '<g id="battle-eyes">' +
+          '<path d="M72 73 L90 77 L87 85 L72 82 Z" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="81" cy="79" r="4.5" fill="' + eyeColor + '" />' +
+          '<circle cx="80" cy="77" r="1.8" fill="#FFFFFF" />' +
+          '<path d="M128 73 L110 77 L113 85 L128 82 Z" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="119" cy="79" r="4.5" fill="' + eyeColor + '" />' +
+          '<circle cx="118" cy="77" r="1.8" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (eyes === 'gentle') {
+        return '<g stroke="#111827" stroke-width="3.5" stroke-linecap="round" fill="none">' +
+          '<path d="M72 78 Q81 72 90 78" />' +
+          '<path d="M110 78 Q119 72 128 78" />' +
+          '</g>';
+      }
+      if (eyes === 'confident') {
+        return '<g id="confident-eyes">' +
+          '<ellipse cx="80" cy="78" rx="8.5" ry="10" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="81" cy="78" rx="5.5" ry="7.5" fill="' + eyeColor + '" />' +
+          '<circle cx="79" cy="75" r="2.5" fill="#FFFFFF" />' +
+          '<path d="M71 72 Q80 70 89 74" stroke="#111827" stroke-width="3" fill="none" />' +
+          '<ellipse cx="120" cy="78" rx="8.5" ry="10" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="119" cy="78" rx="5.5" ry="7.5" fill="' + eyeColor + '" />' +
+          '<circle cx="117" cy="75" r="2.5" fill="#FFFFFF" />' +
+          '<path d="M111 74 Q120 70 129 72" stroke="#111827" stroke-width="3" fill="none" />' +
+          '</g>';
+      }
+      return '<g id="sparkle-eyes">' +
+        '<ellipse cx="80" cy="78" rx="10" ry="12.5" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+        '<ellipse cx="120" cy="78" rx="10" ry="12.5" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+        '<ellipse cx="80" cy="79" rx="7.5" ry="10" fill="' + eyeColor + '" />' +
+        '<ellipse cx="120" cy="79" rx="7.5" ry="10" fill="' + eyeColor + '" />' +
+        '<circle cx="77" cy="75" r="3.5" fill="#FFFFFF" />' +
+        '<circle cx="82" cy="83" r="1.8" fill="#FFFFFF" />' +
+        '<circle cx="117" cy="75" r="3.5" fill="#FFFFFF" />' +
+        '<circle cx="122" cy="83" r="1.8" fill="#FFFFFF" />' +
+        '<path d="M70 72 Q80 66 90 71" stroke="#111827" stroke-width="3.2" stroke-linecap="round" fill="none" />' +
+        '<path d="M110 71 Q120 66 130 72" stroke="#111827" stroke-width="3.2" stroke-linecap="round" fill="none" />' +
+        '</g>';
+    }
 
-      // 9. Facial Features
-      // Blush
-      if (cfg.blush === 'soft_pink' || cfg.blush === 'heart_blush') {
-        out += `<ellipse cx="72" cy="88" rx="9" ry="5.5" fill="#FF80AB" opacity="0.6"/>`;
-        out += `<ellipse cx="128" cy="88" rx="9" ry="5.5" fill="#FF80AB" opacity="0.6"/>`;
+    function renderExpressionSvg(expr) {
+      if (expr === 'excited') {
+        return '<path d="M93 92 Q100 89 107 92 Q107 104 100 104 Q93 104 93 92 Z" fill="#FF5252" stroke="#111827" stroke-width="2.2" />';
       }
-      // Eyes
-      if (cfg.eyes === 'wink') {
-        out += `<ellipse cx="80" cy="78" rx="9" ry="12" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<ellipse cx="80" cy="79" rx="6" ry="9" fill="${eyeColor}"/>`;
-        out += `<circle cx="78" cy="76" r="3" fill="#FFF"/>`;
-        out += `<path d="M112 78 Q120 72 128 78" stroke="#111827" stroke-width="3.5" stroke-linecap="round" fill="none"/>`;
-      } else {
-        out += `<ellipse cx="80" cy="78" rx="10" ry="12" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<ellipse cx="120" cy="78" rx="10" ry="12" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<ellipse cx="80" cy="79" rx="7" ry="9.5" fill="${eyeColor}"/>`;
-        out += `<ellipse cx="120" cy="79" rx="7" ry="9.5" fill="${eyeColor}"/>`;
-        out += `<circle cx="77" cy="75" r="3.5" fill="#FFF"/><circle cx="117" cy="75" r="3.5" fill="#FFF"/>`;
-        out += `<path d="M70 72 Q80 66 90 71" stroke="#111827" stroke-width="3.2" fill="none"/>`;
-        out += `<path d="M110 71 Q120 66 130 72" stroke="#111827" stroke-width="3.2" fill="none"/>`;
+      if (expr === 'cat_smile') {
+        return '<path d="M93 94 Q97 98 100 94 Q103 98 107 94" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none" />';
       }
-      // Eyebrows
-      out += `<path d="M72 65 Q81 60 90 64" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
-      out += `<path d="M110 64 Q119 60 128 65" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
-      // Mouth
-      if (cfg.expression === 'cat_smile') {
-        out += `<path d="M93 94 Q97 98 100 94 Q103 98 107 94" stroke="#111827" stroke-width="2.5" fill="none"/>`;
-      } else {
-        out += `<path d="M94 94 Q100 101 106 94" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+      if (expr === 'surprised') {
+        return '<circle cx="100" cy="96" r="4.5" fill="#111827" />';
       }
+      if (expr === 'shy') {
+        return '<path d="M96 95 Q100 97 104 95" stroke="#111827" stroke-width="2.2" stroke-linecap="round" fill="none" />';
+      }
+      if (expr === 'sleepy') {
+        return '<ellipse cx="100" cy="96" rx="3.5" ry="5.5" fill="#111827" />';
+      }
+      if (expr === 'serious') {
+        return '<line x1="95" y1="96" x2="105" y2="96" stroke="#111827" stroke-width="2.5" stroke-linecap="round" />';
+      }
+      if (expr === 'playful') {
+        return '<g>' +
+          '<path d="M94 94 Q100 97 106 94" stroke="#111827" stroke-width="2.2" fill="none" />' +
+          '<path d="M98 95 Q100 102 104 100 Q105 95 102 95 Z" fill="#FF4081" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      return '<path d="M94 94 Q100 101 106 94" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none" />';
+    }
 
-      // 10. Front Hair (Bangs)
-      if (cfg.hairFront === 'bangs_curtain') {
-        out += `<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 C144 80 134 82 120 70 C108 85 92 85 80 70 C66 82 56 80 52 64 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-      } else if (cfg.hairFront === 'bangs_spiky') {
-        out += `<path d="M52 65 C50 35 70 28 100 28 C130 28 150 35 148 65 L140 60 L132 75 L124 58 L114 77 L102 56 L90 77 L80 58 L70 75 L62 60 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
-      } else {
-        out += `<path d="M52 64 C50 40 70 30 100 30 C130 30 150 40 148 64 C148 78 140 72 136 68 C130 74 122 72 118 68 C112 74 104 74 100 68 C96 74 88 74 82 68 C78 72 70 74 64 68 C60 72 52 78 52 64 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+    function renderFaceMarksSvg(mark) {
+      if (mark === 'freckles') {
+        return '<g fill="#8D6E63">' +
+          '<circle cx="70" cy="85" r="1.3" /><circle cx="74" cy="87" r="1.3" /><circle cx="72" cy="89" r="1.3" />' +
+          '<circle cx="126" cy="85" r="1.3" /><circle cx="130" cy="87" r="1.3" /><circle cx="128" cy="89" r="1.3" />' +
+          '</g>';
       }
-
-      // 11. Face Accessories
-      if (cfg.faceAccessory === 'round_glasses') {
-        out += `<circle cx="80" cy="78" r="11" stroke="#F57F17" stroke-width="2.5" fill="none"/>`;
-        out += `<circle cx="120" cy="78" r="11" stroke="#F57F17" stroke-width="2.5" fill="none"/>`;
-        out += `<line x1="91" y1="78" x2="109" y2="78" stroke="#F57F17" stroke-width="2.5"/>`;
+      if (mark === 'bandaid') {
+        return '<g>' +
+          '<rect x="91" y="87" width="18" height="6" rx="2" fill="#FFE082" stroke="#111827" stroke-width="1.5" transform="rotate(-6 100 90)" />' +
+          '<circle cx="100" cy="90" r="1.5" fill="#FF8A80" />' +
+          '</g>';
       }
-
-      // 12. Hat
-      if (cfg.hat === 'mushroom_cap') {
-        out += `<path d="M40 50 C40 10 160 10 160 50 C165 58 150 64 100 64 C50 64 35 58 40 50 Z" fill="${hatColor}" stroke="#111827" stroke-width="3.2"/>`;
-        out += `<circle cx="70" cy="35" r="9" fill="#FFF" stroke="#111827" stroke-width="1.5"/><circle cx="100" cy="24" r="11" fill="#FFF" stroke="#111827" stroke-width="1.5"/><circle cx="130" cy="35" r="9" fill="#FFF" stroke="#111827" stroke-width="1.5"/>`;
-      } else if (cfg.hat === 'pink_ribbon') {
-        out += `<path d="M100 32 C70 12 60 48 100 36 Z" fill="#E91E63" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<path d="M100 32 C130 12 140 48 100 36 Z" fill="#E91E63" stroke="#111827" stroke-width="2.5"/>`;
-        out += `<ellipse cx="100" cy="34" rx="7" ry="6" fill="#FF80AB" stroke="#111827" stroke-width="2"/>`;
-      } else if (cfg.hat === 'golden_crown') {
-        out += `<polygon points="68,44 64,22 80,32 100,16 120,32 136,22 132,44" fill="#FFD54F" stroke="#111827" stroke-width="2.8"/>`;
+      if (mark === 'star_sticker') {
+        return '<polygon points="70,89 72,93 76,93 73,95 74,99 70,97 66,99 67,95 64,93 68,93" fill="#FFEB3B" stroke="#111827" stroke-width="1.2" />';
       }
-
-      // 13. Weapon
-      if (cfg.weapon === 'wooden_wand') {
-        out += `<line x1="135" y1="165" x2="168" y2="120" stroke="#8D6E63" stroke-width="4.5" stroke-linecap="round"/>`;
-        out += `<circle cx="168" cy="120" r="7.5" fill="#FFEB3B" stroke="#111827" stroke-width="2"/>`;
-      } else if (cfg.weapon === 'beginner_dagger') {
-        out += `<polygon points="144,142 165,115 154,140" fill="#CFD8DC" stroke="#111827" stroke-width="2"/>`;
-      } else if (cfg.weapon === 'rainbow_balloon') {
-        out += `<path d="M140 160 Q155 130 160 85" stroke="#111827" stroke-width="1.5" fill="none"/>`;
-        out += `<g transform="translate(160, 65) scale(0.9)"><path d="M0 0 C-18 -18 -32 6 0 35 C32 6 18 -18 0 0 Z" fill="#FF4081" stroke="#111827" stroke-width="2.5"/></g>`;
+      if (mark === 'whiskers') {
+        return '<g stroke="#111827" stroke-width="1.8" stroke-linecap="round">' +
+          '<line x1="62" y1="87" x2="52" y2="85" /><line x1="63" y1="91" x2="52" y2="92" />' +
+          '<line x1="138" y1="87" x2="148" y2="85" /><line x1="137" y1="91" x2="148" y2="92" />' +
+          '</g>';
       }
-
-      // 14. Effect
-      if (cfg.effect === 'sparkles') {
-        out += `<polygon points="40,90 42,94 46,94 43,97 44,101 40,99 36,101 37,97 34,94 38,94" fill="#FFD54F"/>`;
-        out += `<polygon points="165,95 167,99 171,99 168,102 169,106 165,104 161,106 162,102 159,99 163,99" fill="#FFD54F"/>`;
+      if (mark === 'tear_gem') {
+        return '<polygon points="120,93 123,96 120,99 117,96" fill="#40C4FF" stroke="#111827" stroke-width="1.2" />';
       }
+      return '';
+    }
 
-      out += `</svg>`;
+    function renderHairFrontSvg(hairFront, color, shade, highlight) {
+      if (hairFront === 'none') return '';
+      if (hairFront === 'bangs_straight') {
+        return '<path d="M52 64 C50 40 70 30 100 30 C130 30 150 40 148 64 C148 78 140 72 136 68 C130 74 122 72 118 68 C112 74 104 74 100 68 C96 74 88 74 82 68 C78 72 70 74 64 68 C60 72 52 78 52 64 Z" fill="' + color + '" stroke="#111827" stroke-width="3" stroke-linejoin="round" />';
+      }
+      if (hairFront === 'bangs_curtain') {
+        return '<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 C144 80 134 82 120 70 C108 85 92 85 80 70 C66 82 56 80 52 64 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairFront === 'bangs_blunt_bob') {
+        return '<path d="M52 65 C50 40 70 30 100 30 C130 30 150 40 148 65 C146 82 142 85 138 74 L62 74 C58 85 54 82 52 65 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairFront === 'bangs_spiky') {
+        return '<path d="M52 65 C50 35 70 28 100 28 C130 28 150 35 148 65 L140 60 L132 75 L124 58 L114 77 L102 56 L90 77 L80 58 L70 75 L62 60 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairFront === 'bangs_side_sweep') {
+        return '<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 C146 80 135 84 125 76 C105 82 85 82 62 62 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairFront === 'bangs_wavy') {
+        return '<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 Q135 82 120 70 Q100 86 80 70 Q65 82 52 64 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+      }
+      if (hairFront === 'bangs_twin_locks') {
+        return '<g>' +
+          '<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 C145 74 135 72 125 68 C115 72 105 72 100 68 C95 72 85 72 75 68 C65 72 55 74 52 64 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<path d="M54 68 Q50 90 56 102 Q60 88 58 68 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M146 68 Q150 90 144 102 Q140 88 142 68 Z" fill="' + color + '" stroke="#111827" stroke-width="2.5" />' +
+          '</g>';
+      }
+      return '<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 C145 78 135 80 115 65 C105 75 95 75 85 65 C65 80 55 78 52 64 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />';
+    }
+
+    function renderFaceAccessorySvg(acc) {
+      if (acc === 'none') return '';
+      if (acc === 'round_glasses') {
+        return '<g stroke="#F57F17" stroke-width="2.5" fill="none">' +
+          '<circle cx="80" cy="78" r="11" /><circle cx="120" cy="78" r="11" />' +
+          '<line x1="91" y1="78" x2="109" y2="78" stroke-width="2.5" />' +
+          '<line x1="53" y1="78" x2="69" y2="78" stroke-width="2" />' +
+          '<line x1="131" y1="78" x2="147" y2="78" stroke-width="2" />' +
+          '</g>';
+      }
+      if (acc === 'black_sunglasses') {
+        return '<g>' +
+          '<path d="M68 72 L92 72 L89 88 L71 88 Z" fill="#212121" stroke="#111827" stroke-width="2" />' +
+          '<path d="M108 72 L132 72 L129 88 L111 88 Z" fill="#212121" stroke="#111827" stroke-width="2" />' +
+          '<line x1="92" y1="74" x2="108" y2="74" stroke="#111827" stroke-width="3" />' +
+          '<line x1="74" y1="75" x2="80" y2="85" stroke="#FFFFFF" stroke-width="1.5" />' +
+          '<line x1="114" y1="75" x2="120" y2="85" stroke="#FFFFFF" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (acc === 'heart_glasses') {
+        return '<g fill="#FF4081" stroke="#111827" stroke-width="2" opacity="0.85">' +
+          '<path d="M72 75 C72 68 80 66 84 72 C88 66 96 68 96 75 C96 82 84 90 84 90 C84 90 72 82 72 75 Z" />' +
+          '<path d="M104 75 C104 68 112 66 116 72 C120 66 128 68 128 75 C128 82 116 90 116 90 C116 90 104 82 104 75 Z" />' +
+          '<line x1="96" y1="75" x2="104" y2="75" stroke="#111827" stroke-width="2.5" />' +
+          '</g>';
+      }
+      if (acc === 'medical_mask') {
+        return '<g>' +
+          '<rect x="76" y="86" width="48" height="25" rx="6" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<line x1="55" y1="92" x2="76" y2="94" stroke="#111827" stroke-width="1.5" />' +
+          '<line x1="145" y1="92" x2="124" y2="94" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (acc === 'pirate_eyepatch') {
+        return '<g>' +
+          '<polygon points="70,72 90,72 85,86 75,86" fill="#212121" stroke="#111827" stroke-width="2" />' +
+          '<line x1="53" y1="65" x2="147" y2="88" stroke="#212121" stroke-width="2" />' +
+          '<circle cx="80" cy="78" r="2.5" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (acc === 'gold_monocle') {
+        return '<g stroke="#FFD54F" stroke-width="2.2" fill="none">' +
+          '<circle cx="120" cy="78" r="11" />' +
+          '<path d="M128 86 Q135 105 130 120" stroke="#FFD54F" stroke-width="1.5" stroke-dasharray="3 2" />' +
+          '</g>';
+      }
+      return '';
+    }
+
+    function renderHatSvg(hat, color) {
+      if (hat === 'none') return '';
+      if (hat === 'mushroom_cap') {
+        return '<g id="mushroom-cap">' +
+          '<path d="M40 50 C40 10 160 10 160 50 C165 58 150 64 100 64 C50 64 35 58 40 50 Z" fill="' + color + '" stroke="#111827" stroke-width="3.2" />' +
+          '<circle cx="70" cy="35" r="9" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '<circle cx="100" cy="24" r="11" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '<circle cx="130" cy="35" r="9" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '<circle cx="98" cy="48" r="6" fill="#FFFFFF" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (hat === 'pink_ribbon') {
+        return '<g id="big-ribbon">' +
+          '<path d="M100 32 C70 12 60 48 100 36 Z" fill="#E91E63" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M100 32 C130 12 140 48 100 36 Z" fill="#E91E63" stroke="#111827" stroke-width="2.5" />' +
+          '<ellipse cx="100" cy="34" rx="7" ry="6" fill="#FF80AB" stroke="#111827" stroke-width="2" />' +
+          '<path d="M96 36 L88 56 L94 54 L98 38 Z" fill="#E91E63" stroke="#111827" stroke-width="1.5" />' +
+          '<path d="M104 36 L112 56 L106 54 L102 38 Z" fill="#E91E63" stroke="#111827" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (hat === 'golden_crown') {
+        return '<g id="crown">' +
+          '<polygon points="68,44 64,22 80,32 100,16 120,32 136,22 132,44" fill="#FFD54F" stroke="#111827" stroke-width="2.8" />' +
+          '<circle cx="64" cy="22" r="3" fill="#E53935" stroke="#111827" stroke-width="1" />' +
+          '<circle cx="100" cy="16" r="4" fill="#1E88E5" stroke="#111827" stroke-width="1" />' +
+          '<circle cx="136" cy="22" r="3" fill="#E53935" stroke="#111827" stroke-width="1" />' +
+          '<circle cx="100" cy="36" r="3" fill="#43A047" stroke="#111827" stroke-width="1" />' +
+          '</g>';
+      }
+      if (hat === 'wizard_hat') {
+        return '<g id="wizard-cone">' +
+          '<ellipse cx="100" cy="46" rx="55" ry="12" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<path d="M62 45 Q90 12 135 6 Q120 25 138 45 Z" fill="' + color + '" stroke="#111827" stroke-width="3" />' +
+          '<path d="M66 43 Q100 48 134 43" stroke="#FFD54F" stroke-width="6" fill="none" />' +
+          '<polygon points="100,38 102,42 106,42 103,45 104,49 100,46 96,49 97,45 94,42 98,42" fill="#FFEB3B" />' +
+          '</g>';
+      }
+      if (hat === 'cat_ears_headband') {
+        return '<g>' +
+          '<path d="M56 50 Q100 32 144 50" stroke="#111827" stroke-width="3.5" fill="none" />' +
+          '<polygon points="62,45 52,20 78,35" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<polygon points="63,42 56,26 73,36" fill="#FF80AB" />' +
+          '<polygon points="138,45 148,20 122,35" fill="#FFFFFF" stroke="#111827" stroke-width="2.5" />' +
+          '<polygon points="137,42 144,26 127,36" fill="#FF80AB" />' +
+          '</g>';
+      }
+      if (hat === 'angel_halo') {
+        return '<g>' +
+          '<ellipse cx="100" cy="18" rx="34" ry="10" fill="none" stroke="#FFD54F" stroke-width="4.5" />' +
+          '<ellipse cx="100" cy="18" rx="34" ry="10" fill="none" stroke="#FFF9C4" stroke-width="2" />' +
+          '</g>';
+      }
+      if (hat === 'stylish_beret') {
+        return '<g>' +
+          '<ellipse cx="96" cy="38" rx="42" ry="16" fill="' + color + '" stroke="#111827" stroke-width="3" transform="rotate(-12 96 38)" />' +
+          '<circle cx="94" cy="22" r="3" fill="#111827" />' +
+          '</g>';
+      }
+      if (hat === 'gamer_headphones') {
+        return '<g>' +
+          '<path d="M52 75 Q100 20 148 75" stroke="#37474F" stroke-width="6" fill="none" />' +
+          '<rect x="42" y="66" width="14" height="24" rx="6" fill="#212121" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="49" cy="78" r="3.5" fill="#00E676" />' +
+          '<rect x="144" y="66" width="14" height="24" rx="6" fill="#212121" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="151" cy="78" r="3.5" fill="#00E676" />' +
+          '</g>';
+      }
+      if (hat === 'devil_horns') {
+        return '<g>' +
+          '<path d="M68 45 Q50 20 54 8 Q66 22 72 40 Z" fill="#D32F2F" stroke="#111827" stroke-width="2.5" />' +
+          '<path d="M132 45 Q150 20 146 8 Q134 22 128 40 Z" fill="#D32F2F" stroke="#111827" stroke-width="2.5" />' +
+          '</g>';
+      }
+      if (hat === 'straw_hat') {
+        return '<g>' +
+          '<ellipse cx="100" cy="46" rx="55" ry="12" fill="#FFE082" stroke="#111827" stroke-width="2.8" />' +
+          '<path d="M72 44 Q100 24 128 44 Z" fill="#FFE082" stroke="#111827" stroke-width="2.8" />' +
+          '<path d="M74 44 Q100 48 126 44" stroke="#E53935" stroke-width="4" fill="none" />' +
+          '</g>';
+      }
+      return '';
+    }
+
+    function renderWeaponSvg(weapon, pose) {
+      if (weapon === 'none') return '';
+      if (weapon === 'wooden_wand') {
+        return '<g id="wand">' +
+          '<line x1="135" y1="165" x2="168" y2="120" stroke="#8D6E63" stroke-width="4.5" stroke-linecap="round" />' +
+          '<line x1="135" y1="165" x2="168" y2="120" stroke="#111827" stroke-width="1.5" />' +
+          '<circle cx="168" cy="120" r="7.5" fill="#FFEB3B" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="168" cy="120" r="3" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (weapon === 'beginner_dagger') {
+        return '<g id="dagger">' +
+          '<rect x="135" y="152" width="5" height="18" fill="#5D4037" stroke="#111827" stroke-width="1.5" transform="rotate(-35 135 152)" />' +
+          '<polygon points="144,142 165,115 154,140" fill="#CFD8DC" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="140" cy="148" r="3" fill="#FFD54F" />' +
+          '</g>';
+      }
+      if (weapon === 'rainbow_balloon') {
+        return '<g id="balloon">' +
+          '<path d="M140 160 Q155 130 160 85" stroke="#111827" stroke-width="1.5" fill="none" />' +
+          '<g transform="translate(160, 65) scale(0.9)">' +
+          '<path d="M0 0 C-18 -18 -32 6 0 35 C32 6 18 -18 0 0 Z" fill="#FF4081" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="-6" cy="4" r="3" fill="#FFFFFF" opacity="0.7" />' +
+          '</g>' +
+          '</g>';
+      }
+      if (weapon === 'star_staff') {
+        return '<g id="star-staff">' +
+          '<line x1="135" y1="175" x2="165" y2="95" stroke="#5C6BC0" stroke-width="4" stroke-linecap="round" />' +
+          '<circle cx="165" cy="95" r="10" fill="#FFD54F" stroke="#111827" stroke-width="2" />' +
+          '<polygon points="165,85 168,92 175,92 170,97 172,104 165,100 158,104 160,97 155,92 162,92" fill="#FFFFFF" />' +
+          '</g>';
+      }
+      if (weapon === 'crystal_bow') {
+        return '<g id="bow">' +
+          '<path d="M135 125 Q165 155 135 185" stroke="#40C4FF" stroke-width="4" fill="none" />' +
+          '<line x1="135" y1="125" x2="135" y2="185" stroke="#FFFFFF" stroke-width="1.5" />' +
+          '</g>';
+      }
+      if (weapon === 'lollipop_mace') {
+        return '<g id="lollipop">' +
+          '<line x1="136" y1="168" x2="162" y2="125" stroke="#EEEEEE" stroke-width="4.5" stroke-linecap="round" />' +
+          '<circle cx="162" cy="125" r="13" fill="#FF80AB" stroke="#111827" stroke-width="2.5" />' +
+          '<circle cx="162" cy="125" r="8" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="162" cy="125" r="4" fill="#FF4081" />' +
+          '</g>';
+      }
+      if (weapon === 'cat_paw_staff') {
+        return '<g id="cat-paw">' +
+          '<line x1="136" y1="168" x2="164" y2="120" stroke="#8D6E63" stroke-width="4" stroke-linecap="round" />' +
+          '<circle cx="164" cy="120" r="12" fill="#FFFFFF" stroke="#111827" stroke-width="2" />' +
+          '<circle cx="164" cy="122" r="5" fill="#FF80AB" />' +
+          '<circle cx="158" cy="114" r="2.5" fill="#FF80AB" />' +
+          '<circle cx="164" cy="112" r="2.5" fill="#FF80AB" />' +
+          '<circle cx="170" cy="114" r="2.5" fill="#FF80AB" />' +
+          '</g>';
+      }
+      return '';
+    }
+
+    function renderForegroundEffectSvg(effect) {
+      if (effect === 'sparkles') {
+        return '<g fill="#FFD54F" stroke="#111827" stroke-width="1">' +
+          '<polygon points="40,90 42,94 46,94 43,97 44,101 40,99 36,101 37,97 34,94 38,94" />' +
+          '<polygon points="165,95 167,99 171,99 168,102 169,106 165,104 161,106 162,102 159,99 163,99" />' +
+          '<polygon points="50,150 51,153 54,153 52,155 53,158 50,156 47,158 48,155 46,153 49,153" />' +
+          '<polygon points="150,155 151,158 154,158 152,160 153,163 150,161 147,163 148,160 146,158 149,158" />' +
+          '</g>';
+      }
+      if (effect === 'maple_leaves') {
+        return '<g>' +
+          '<g transform="translate(42, 105) scale(0.6) rotate(20)">' +
+          '<path d="M0 -12 L3 -5 L10 -8 L7 -1 L13 2 L7 5 L9 11 L3 8 L0 14 L-3 8 L-9 11 L-7 5 L-13 2 L-7 -1 L-10 -8 L-3 -5 Z" fill="#E53935" stroke="#111827" stroke-width="1.5" />' +
+          '</g>' +
+          '<g transform="translate(160, 110) scale(0.55) rotate(-35)">' +
+          '<path d="M0 -12 L3 -5 L10 -8 L7 -1 L13 2 L7 5 L9 11 L3 8 L0 14 L-3 8 L-9 11 L-7 5 L-13 2 L-7 -1 L-10 -8 L-3 -5 Z" fill="#FF7043" stroke="#111827" stroke-width="1.5" />' +
+          '</g>' +
+          '<g transform="translate(155, 175) scale(0.5) rotate(15)">' +
+          '<path d="M0 -12 L3 -5 L10 -8 L7 -1 L13 2 L7 5 L9 11 L3 8 L0 14 L-3 8 L-9 11 L-7 5 L-13 2 L-7 -1 L-10 -8 L-3 -5 Z" fill="#FFA000" stroke="#111827" stroke-width="1.5" />' +
+          '</g>' +
+          '</g>';
+      }
+      if (effect === 'floating_hearts') {
+        return '<g fill="#FF4081" opacity="0.85">' +
+          '<path d="M45 75 C45 70 51 68 53 72 C55 68 61 70 61 75 C61 80 53 85 53 85 C53 85 45 80 45 75 Z" />' +
+          '<path d="M155 70 C155 65 161 63 163 67 C165 63 171 65 171 70 C171 75 163 80 163 80 C163 80 155 75 155 70 Z" />' +
+          '</g>';
+      }
+      return '';
+    }
+
+    function generateAvatarSvg(cfg, options) {
+      if (!options) options = {};
+      var size = options.size || 140;
+      var animClass = options.anim === 'run' ? 'anim-run' : options.anim === 'idle' ? 'anim-idle' : '';
+      var skin = SKIN_COLORS[cfg.skinTone] || '#FFE8D6';
+      var skinShade = getDarkerShade(skin, 0.15);
+      var hairColor = cfg.hairColor || '#4E342E';
+      var hairHighlight = cfg.hairHighlight || '#FF7043';
+      var hairShade = getDarkerShade(hairColor, 0.2);
+      var topColor = cfg.topColor || '#E53935';
+      var topShade = getDarkerShade(topColor, 0.2);
+      var bottomColor = cfg.bottomColor || '#1976D2';
+      var bottomShade = getDarkerShade(bottomColor, 0.2);
+      var shoesColor = cfg.shoesColor || '#ECEFF1';
+      var shoesShade = getDarkerShade(shoesColor, 0.2);
+      var hatColor = cfg.hatColor || '#E53935';
+      var eyeColor = cfg.eyeColor || '#1976D2';
+      var pose = options.anim === 'run' ? 'running' : 'idle';
+      var showShadow = options.showFloorShadow !== false;
+
+      var out = '<svg viewBox="0 0 200 240" width="' + size + '" height="' + size + '" class="' + animClass + '" xmlns="http://www.w3.org/2000/svg" style="image-rendering:crisp-edges; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.15));">';
+      out += '<defs>' +
+        '<linearGradient id="hairGradient" x1="0%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="0%" stop-color="' + hairHighlight + '" />' +
+        '<stop offset="65%" stop-color="' + hairColor + '" />' +
+        '<stop offset="100%" stop-color="' + hairShade + '" />' +
+        '</linearGradient>' +
+        '<linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#FFFFFF" />' +
+        '<stop offset="60%" stop-color="#E0F7FA" />' +
+        '<stop offset="100%" stop-color="#80DEEA" />' +
+        '</linearGradient>' +
+        '<linearGradient id="demonWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#37474F" />' +
+        '<stop offset="100%" stop-color="#1A237E" />' +
+        '</linearGradient>' +
+        '<radialGradient id="holyGlowGrad" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#FFF9C4" stop-opacity="0.8" />' +
+        '<stop offset="70%" stop-color="#FFD54F" stop-opacity="0.3" />' +
+        '<stop offset="100%" stop-color="#FFA000" stop-opacity="0" />' +
+        '</radialGradient>' +
+        '</defs>';
+
+      out += renderBackgroundEffectSvg(cfg.effect);
+      out += renderCapeSvg(cfg.cape);
+      out += renderHairBackSvg(cfg.hairBack, hairColor, hairShade);
+      out += renderCreatureBackSvg(cfg.baseType);
+      if (showShadow) {
+        out += '<ellipse cx="100" cy="215" rx="46" ry="11" fill="rgba(17, 27, 39, 0.22)" />';
+      }
+      out += renderBaseBodySvg(skin, skinShade, pose);
+      out += renderShoesSvg(cfg.shoes, shoesColor, shoesShade, pose);
+      out += renderBottomSvg(cfg.bottom, bottomColor, bottomShade, pose);
+      out += renderTopSvg(cfg.top, topColor, topShade);
+      out += renderHeadBaseSvg(skin, skinShade, cfg.baseType);
+      out += '<g id="face-features">' +
+        renderBlushSvg(cfg.blush) +
+        renderEyebrowsSvg(cfg.eyebrows) +
+        renderEyesSvg(cfg.eyes, eyeColor) +
+        renderExpressionSvg(cfg.expression) +
+        renderFaceMarksSvg(cfg.faceMark) +
+        '</g>';
+      out += renderHairFrontSvg(cfg.hairFront, hairColor, hairShade, hairHighlight);
+      out += renderFaceAccessorySvg(cfg.faceAccessory);
+      out += renderHatSvg(cfg.hat, hatColor);
+      out += renderWeaponSvg(cfg.weapon, pose);
+      out += renderForegroundEffectSvg(cfg.effect);
+      out += '</svg>';
       return out;
     }
 
@@ -1289,6 +2014,164 @@
       showToast('✨ 아바타 코디가 저장되었습니다! 🍁');
     }
 
+    function downloadBlob(blob, filename) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+
+    function exportStudioAvatarSvg() {
+      AudioFX.playItemEquip();
+      var svgStr = generateAvatarSvg(studioDraft, { size: 400, anim: 'idle' });
+      var blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      downloadBlob(blob, (state.user.name || 'maple') + '_avatar.svg');
+      showToast('✨ 벡터 SVG 파일이 다운로드되었습니다!');
+    }
+
+    function exportStudioAvatarPng() {
+      AudioFX.playItemEquip();
+      var svgStr = generateAvatarSvg(studioDraft, { size: 512, anim: 'idle' });
+      var blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var img = new Image();
+      img.onload = function() {
+        URL.revokeObjectURL(url);
+        var canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 614;
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0, 512, 614);
+        canvas.toBlob(function(pngBlob) {
+          if (pngBlob) {
+            downloadBlob(pngBlob, (state.user.name || 'maple') + '_avatar_hd.png');
+            showToast('✨ 512x512 고화질 투명 PNG가 다운로드되었습니다!');
+          }
+        }, 'image/png');
+      };
+      img.src = url;
+    }
+
+    function exportStudioAdventurerCard() {
+      AudioFX.playFanfare();
+      var svgStr = generateAvatarSvg(studioDraft, { size: 360, anim: 'idle' });
+      var blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var img = new Image();
+      img.onload = function() {
+        URL.revokeObjectURL(url);
+        var width = 640;
+        var height = 860;
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+
+        // Card bg
+        var grad = ctx.createLinearGradient(0, 0, 0, height);
+        grad.addColorStop(0, '#FFF9E6');
+        grad.addColorStop(1, '#FFE0B2');
+        ctx.fillStyle = grad;
+        ctx.fillRect(16, 16, width - 32, height - 32);
+
+        ctx.strokeStyle = '#5D4037';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(16, 16, width - 32, height - 32);
+
+        ctx.strokeStyle = '#FFA000';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(28, 28, width - 56, height - 56);
+
+        // Header
+        ctx.fillStyle = '#E65100';
+        ctx.fillRect(48, 48, width - 96, 60);
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(48, 48, width - 96, 60);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 26px "DungGeunMo", monospace, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🍁 MAPLE WORDS 모험가 등록증 🍁', width / 2, 88);
+
+        // Sky window
+        var portX = 70, portY = 135, portW = width - 140, portH = 430;
+        var skyGrad = ctx.createLinearGradient(0, portY, 0, portY + portH);
+        skyGrad.addColorStop(0, '#81D4FA');
+        skyGrad.addColorStop(0.7, '#E1F5FE');
+        skyGrad.addColorStop(0.71, '#A5D6A7');
+        skyGrad.addColorStop(1, '#66BB6A');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(portX, portY, portW, portH);
+        ctx.strokeStyle = '#37474F';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(portX, portY, portW, portH);
+
+        // Draw character
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, width / 2 - 180, portY + portH - 370, 360, 432);
+
+        // Character info
+        var infoY = 590;
+        ctx.fillStyle = '#3E2723';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 28px "DungGeunMo", monospace, sans-serif';
+        ctx.fillText('이름: ' + (state.user.name || '모험가'), 80, infoY);
+
+        ctx.font = '20px "DungGeunMo", monospace, sans-serif';
+        ctx.fillStyle = '#5D4037';
+        ctx.fillText('학번: ' + (state.user.id || '2026'), 80, infoY + 36);
+        ctx.fillText('칭호: Lesson 6 마스터', 80, infoY + 70);
+
+        // Level
+        ctx.fillStyle = '#F57C00';
+        ctx.fillRect(width - 220, infoY - 26, 140, 50);
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(width - 220, infoY - 26, 140, 50);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 24px "DungGeunMo", monospace, sans-serif';
+        ctx.fillText('Lv. ' + (state.level || 1), width - 150, infoY + 8);
+
+        // Stamp
+        ctx.save();
+        ctx.translate(width - 150, infoY + 120);
+        ctx.rotate(-0.15);
+        ctx.strokeStyle = '#D32F2F';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(-65, -30, 130, 60);
+        ctx.fillStyle = '#D32F2F';
+        ctx.font = 'bold 18px "DungGeunMo", monospace, sans-serif';
+        ctx.fillText('LESSON 6', 0, -6);
+        ctx.fillText('인증 마크 ★', 0, 18);
+        ctx.restore();
+
+        // Footer
+        ctx.fillStyle = '#8D6E63';
+        ctx.font = '15px "DungGeunMo", monospace, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Maple Words RPG • Buy and Sell Wisely', width / 2, height - 42);
+
+        canvas.toBlob(function(pngBlob) {
+          if (pngBlob) {
+            downloadBlob(pngBlob, (state.user.name || 'maple') + '_adventurer_card.png');
+            showToast('🍁 모험가 등록증 카드가 발급되었습니다!');
+          }
+        }, 'image/png');
+      };
+      img.src = url;
+    }
+
+
     function renderStudioPreview() {
       const target = document.getElementById('studio-avatar-render');
       if (target) target.innerHTML = generateAvatarSvg(studioDraft, { size: 210, anim: 'idle' });
@@ -1335,188 +2218,145 @@
       let items = [];
       if (currentStudioTab === 'hair') {
         items = [
-          { type: 'hairFront', val: 'bangs_straight', label: '일자뱅', icon: '💇' },
-          { type: 'hairFront', val: 'bangs_curtain', label: '커튼뱅', icon: '✂️' },
-          { type: 'hairFront', val: 'bangs_spiky', label: '스파이키', icon: '⚡' },
-          { type: 'hairBack', val: 'short_neat', label: '숏컷', icon: '👦' },
-          { type: 'hairBack', val: 'long_straight', label: '긴생머리', icon: '👩' },
-          { type: 'hairBack', val: 'twin_tails', label: '트윈테일', icon: '👧' },
-          { type: 'hairBack', val: 'high_ponytail', label: '포니테일', icon: '👱‍♀️' },
-          { type: 'hairBack', val: 'bob_cut', label: '단발보브', icon: '💇' }
+          { type: 'hairFront', val: 'bangs_straight', label: '일자 뱅', icon: '💇' },
+          { type: 'hairFront', val: 'bangs_curtain', label: '커튼 뱅', icon: '✂️' },
+          { type: 'hairFront', val: 'bangs_blunt_bob', label: '단발 보브 뱅', icon: '💇‍♀️' },
+          { type: 'hairFront', val: 'bangs_spiky', label: '샤기 스파이크', icon: '⚡' },
+          { type: 'hairFront', val: 'bangs_side_sweep', label: '사이드 스윕', icon: '💫' },
+          { type: 'hairFront', val: 'bangs_wavy', label: '물결 웨이브 뱅', icon: '🌊' },
+          { type: 'hairFront', val: 'bangs_twin_locks', label: '애교 옆머리', icon: '🎀' },
+          { type: 'hairFront', val: 'bangs_parted', label: '5:5 가르마', icon: '✨' },
+          { type: 'hairBack', val: 'short_neat', label: '깔끔 숏컷', icon: '👦' },
+          { type: 'hairBack', val: 'long_straight', label: '찰랑 긴생머리', icon: '👩' },
+          { type: 'hairBack', val: 'twin_tails', label: '리본 양갈래', icon: '👧' },
+          { type: 'hairBack', val: 'high_ponytail', label: '하이 포니테일', icon: '👱‍♀️' },
+          { type: 'hairBack', val: 'wavy_cascade', label: '여신 웨이브', icon: '🌊' },
+          { type: 'hairBack', val: 'spiky_anime', label: '애니 스파이크', icon: '⚡' },
+          { type: 'hairBack', val: 'bob_cut', label: '단발 칼단발', icon: '💇' },
+          { type: 'hairBack', val: 'braided_side', label: '사이드 땋은머리', icon: '🌾' },
+          { type: 'hairBack', val: 'wolf_cut', label: '트렌디 울프컷', icon: '🐺' },
+          { type: 'hairBack', val: 'twin_buns', label: '뿌까 만두머리', icon: '🥟' }
         ];
       } else if (currentStudioTab === 'face') {
         items = [
-          { type: 'eyes', val: 'sparkle', label: '순정눈', icon: '✨' },
-          { type: 'eyes', val: 'wink', label: '윙크눈', icon: '😉' },
-          { type: 'expression', val: 'happy', label: '활짝미소', icon: '😄' },
-          { type: 'expression', val: 'cat_smile', label: '고양이입', icon: '😺' },
-          { type: 'blush', val: 'soft_pink', label: '볼터치', icon: '🌸' },
-          { type: 'blush', val: 'none', label: '볼터치없음', icon: '❌' }
+          { type: 'eyes', val: 'sparkle', label: '반짝 순정눈', icon: '✨' },
+          { type: 'eyes', val: 'confident', label: '당당 결의눈', icon: '👁️' },
+          { type: 'eyes', val: 'sleepy', label: '졸린 나른눈', icon: '🥱' },
+          { type: 'eyes', val: 'battle', label: '전투 카리스마', icon: '⚔️' },
+          { type: 'eyes', val: 'wink', label: '장난 윙크눈', icon: '😉' },
+          { type: 'eyes', val: 'round_cute', label: '초롱 땡글눈', icon: '👀' },
+          { type: 'eyes', val: 'cat_eyes', label: '도도 고양이눈', icon: '🐱' },
+          { type: 'eyes', val: 'gentle', label: '실눈 온화미소', icon: '☺️' },
+          { type: 'eyebrows', val: 'curved', label: '자연스런 눈썹', icon: '〰️' },
+          { type: 'eyebrows', val: 'sharp', label: '샤프한 눈썹', icon: '🗡️' },
+          { type: 'eyebrows', val: 'worried', label: '팔자 걱정눈썹', icon: '🥺' },
+          { type: 'eyebrows', val: 'thick', label: '송충이 굵은눈썹', icon: '🐛' },
+          { type: 'eyebrows', val: 'short_dots', label: '마로 눈썹 점', icon: '⚪' },
+          { type: 'expression', val: 'happy', label: '활짝 미소', icon: '😄' },
+          { type: 'expression', val: 'excited', label: '신난 함박웃음', icon: '😆' },
+          { type: 'expression', val: 'cat_smile', label: '고양이 입', icon: '😺' },
+          { type: 'expression', val: 'surprised', label: '깜짝 놀란 입', icon: '😮' },
+          { type: 'expression', val: 'shy', label: '수줍은 미소', icon: '😊' },
+          { type: 'expression', val: 'sleepy', label: '하품 쿨쿨', icon: '😴' },
+          { type: 'expression', val: 'serious', label: '근엄 진지', icon: '😐' },
+          { type: 'expression', val: 'playful', label: '메롱 장난', icon: '😜' },
+          { type: 'blush', val: 'soft_pink', label: '핑크 볼터치', icon: '🌸' },
+          { type: 'blush', val: 'subtle_peach', label: '살구 볼터치', icon: '🍑' },
+          { type: 'blush', val: 'heart_blush', label: '하트 홍조', icon: '💖' },
+          { type: 'blush', val: 'anime_lines', label: '부끄 빗금 홍조', icon: '😳' },
+          { type: 'blush', val: 'none', label: '볼터치 없음', icon: '❌' },
+          { type: 'faceMark', val: 'freckles', label: '주근깨', icon: '✨' },
+          { type: 'faceMark', val: 'bandaid', label: '반창고', icon: '🩹' },
+          { type: 'faceMark', val: 'star_sticker', label: '별 스티커', icon: '⭐' },
+          { type: 'faceMark', val: 'whiskers', label: '고양이 수염', icon: '😸' },
+          { type: 'faceMark', val: 'tear_gem', label: '눈물 큐빅 보석', icon: '💎' },
+          { type: 'faceMark', val: 'none', label: '장식 없음', icon: '❌' }
         ];
       } else if (currentStudioTab === 'outfit') {
         items = [
-          { type: 'top', val: 'maple_tee', label: '단풍티', icon: '👕' },
-          { type: 'top', val: 'sailor_uniform', label: '세일러교복', icon: '👔' },
-          { type: 'top', val: 'knight_armor', label: '기사갑옷', icon: '🛡️', reqLv: 2 },
-          { type: 'bottom', val: 'denim_shorts', label: '청반바지', icon: '🩳' },
-          { type: 'bottom', val: 'pleated_skirt', label: '주름치마', icon: '👗' }
+          { type: 'top', val: 'maple_tee', label: '단풍잎 기본티', icon: '👕' },
+          { type: 'top', val: 'sailor_uniform', label: '세일러 교복', icon: '👔' },
+          { type: 'top', val: 'cozy_hoodie', label: '포근 후드티', icon: '🧥' },
+          { type: 'top', val: 'knight_armor', label: '용사의 기사갑옷', icon: '🛡️', reqLv: 2 },
+          { type: 'top', val: 'striped_sweater', label: '스트라이프 니트', icon: '🧶' },
+          { type: 'top', val: 'magician_robe', label: '대마법사 로브', icon: '🔮', reqLv: 3 },
+          { type: 'top', val: 'streetwear_jacket', label: '네온 스트릿 재킷', icon: '⚡' },
+          { type: 'top', val: 'gothic_blouse', label: '고딕 프릴 블라우스', icon: '🖤', reqLv: 2 },
+          { type: 'top', val: 'summer_tank', label: '여름 썸머 나시', icon: '🎽' },
+          { type: 'bottom', val: 'denim_shorts', label: '데님 청반바지', icon: '🩳' },
+          { type: 'bottom', val: 'pleated_skirt', label: '클래식 테니스 스커트', icon: '👗' },
+          { type: 'bottom', val: 'frill_skirt', label: '2단 프릴 치마', icon: '🌸' },
+          { type: 'bottom', val: 'track_shorts', label: '스포티 트레이닝 숏', icon: '🏃' },
+          { type: 'bottom', val: 'cargo_pants', label: '빅포켓 카고바지', icon: '👖' },
+          { type: 'bottom', val: 'school_trousers', label: '단정한 학생 슬랙스', icon: '👔' },
+          { type: 'bottom', val: 'adventurer_pants', label: '모험가 벨트 팬츠', icon: '🧭' },
+          { type: 'shoes', val: 'sneakers', label: '캔버스 스니커즈', icon: '👟' },
+          { type: 'shoes', val: 'leather_boots', label: '가죽 워커 부츠', icon: '👢' },
+          { type: 'shoes', val: 'combat_boots', label: '헤비 전투화', icon: '🥾' },
+          { type: 'shoes', val: 'rabbit_slippers', label: '몽실 토끼 슬리퍼', icon: '🐰' },
+          { type: 'shoes', val: 'mary_janes', label: '단정한 메리제인 슈즈', icon: '🥿' },
+          { type: 'shoes', val: 'wing_shoes', label: '헤르메스 날개 신발', icon: '🪽', reqLv: 2 }
         ];
       } else if (currentStudioTab === 'headwear') {
         items = [
-          { type: 'hat', val: 'mushroom_cap', label: '버섯모자', icon: '🍄' },
-          { type: 'hat', val: 'pink_ribbon', label: '핑크리본', icon: '🎀', reqLv: 2 },
-          { type: 'hat', val: 'golden_crown', label: '황금왕관', icon: '👑', reqLv: 3 },
-          { type: 'hat', val: 'none', label: '모자없음', icon: '❌' },
-          { type: 'cape', val: 'angel_wings', label: '천사날개', icon: '🪽', reqLv: 2 },
-          { type: 'cape', val: 'red_adventurer_cape', label: '빨간망토', icon: '🧣' },
-          { type: 'cape', val: 'demon_wings', label: '악마날개', icon: '🦇', reqLv: 3 },
-          { type: 'cape', val: 'none', label: '망토없음', icon: '❌' },
-          { type: 'faceAccessory', val: 'round_glasses', label: '동글안경', icon: '👓' },
-          { type: 'faceAccessory', val: 'none', label: '안경없음', icon: '❌' }
+          { type: 'hat', val: 'mushroom_cap', label: '주황버섯 갓모자', icon: '🍄' },
+          { type: 'hat', val: 'pink_ribbon', label: '왕리본 머리띠', icon: '🎀', reqLv: 2 },
+          { type: 'hat', val: 'golden_crown', label: '찬란한 황금왕관', icon: '👑', reqLv: 3 },
+          { type: 'hat', val: 'wizard_hat', label: '별빛 마법사 고깔모자', icon: '🧙', reqLv: 2 },
+          { type: 'hat', val: 'cat_ears_headband', label: '폭신 고양이 귀 머리띠', icon: '😸' },
+          { type: 'hat', val: 'angel_halo', label: '빛나는 천사 엔젤링', icon: '😇', reqLv: 3 },
+          { type: 'hat', val: 'stylish_beret', label: '프렌치 베레모', icon: '🎨' },
+          { type: 'hat', val: 'gamer_headphones', label: 'RGB 게이밍 헤드셋', icon: '🎧' },
+          { type: 'hat', val: 'devil_horns', label: '앙마 뿔 헤어핀', icon: '😈', reqLv: 2 },
+          { type: 'hat', val: 'straw_hat', label: '낭만 밀짚모자', icon: '👒' },
+          { type: 'hat', val: 'none', label: '모자 없음', icon: '❌' },
+          { type: 'cape', val: 'angel_wings', label: '순백 천사날개', icon: '🪽', reqLv: 2 },
+          { type: 'cape', val: 'red_adventurer_cape', label: '모험가의 붉은망토', icon: '🧣' },
+          { type: 'cape', val: 'demon_wings', label: '칠흑의 악마날개', icon: '🦇', reqLv: 3 },
+          { type: 'cape', val: 'fairy_wings', label: '엘프 요정날개', icon: '🧚', reqLv: 2 },
+          { type: 'cape', val: 'slime_backpack', label: '말랑 슬라임 가방', icon: '🎒' },
+          { type: 'cape', val: 'star_cape', label: '은하수 별빛망토', icon: '🌌', reqLv: 3 },
+          { type: 'cape', val: 'none', label: '망토 없음', icon: '❌' },
+          { type: 'faceAccessory', val: 'round_glasses', label: '지적인 둥근안경', icon: '👓' },
+          { type: 'faceAccessory', val: 'black_sunglasses', label: '힙스터 선글라스', icon: '🕶️' },
+          { type: 'faceAccessory', val: 'heart_glasses', label: '하트 틴트 선글라스', icon: '💖' },
+          { type: 'faceAccessory', val: 'medical_mask', label: '위생 패션마스크', icon: '😷' },
+          { type: 'faceAccessory', val: 'pirate_eyepatch', label: '해적 안대', icon: '🏴‍☠️', reqLv: 2 },
+          { type: 'faceAccessory', val: 'gold_monocle', label: '귀족 금장 외안경', icon: '🧐', reqLv: 2 },
+          { type: 'faceAccessory', val: 'none', label: '안경 없음', icon: '❌' }
         ];
       } else if (currentStudioTab === 'weapons') {
         items = [
-          { type: 'weapon', val: 'wooden_wand', label: '나무완드', icon: '🪄' },
-          { type: 'weapon', val: 'beginner_dagger', label: '단검', icon: '🗡️', reqLv: 2 },
-          { type: 'weapon', val: 'rainbow_balloon', label: '하트풍선', icon: '🎈', reqLv: 2 },
+          { type: 'weapon', val: 'wooden_wand', label: '견습 마법사 완드', icon: '🪄' },
+          { type: 'weapon', val: 'beginner_dagger', label: '초보 도적 단검', icon: '🗡️', reqLv: 2 },
+          { type: 'weapon', val: 'rainbow_balloon', label: '두둥실 하트풍선', icon: '🎈', reqLv: 2 },
+          { type: 'weapon', val: 'star_staff', label: '별빛 수호자의 지팡이', icon: '🌟', reqLv: 3 },
+          { type: 'weapon', val: 'crystal_bow', label: '수정 얼음 활', icon: '🏹', reqLv: 3 },
+          { type: 'weapon', val: 'lollipop_mace', label: '딸기 롤리팝 메이스', icon: '🍭' },
+          { type: 'weapon', val: 'cat_paw_staff', label: '말랑 냥이 발바닥 스태프', icon: '🐾' },
           { type: 'weapon', val: 'none', label: '맨손', icon: '✊' },
-          { type: 'effect', val: 'sparkles', label: '반짝이', icon: '✨' },
-          { type: 'effect', val: 'none', label: '효과없음', icon: '❌' }
+          { type: 'effect', val: 'sparkles', label: '황금 반짝이 스파클', icon: '✨' },
+          { type: 'effect', val: 'holy_glow', label: '성스러운 후광 아우라', icon: '☀️', reqLv: 2 },
+          { type: 'effect', val: 'fire_aura', label: '불꽃 오라', icon: '🔥', reqLv: 3 },
+          { type: 'effect', val: 'maple_leaves', label: '휘날리는 단풍잎', icon: '🍁' },
+          { type: 'effect', val: 'floating_hearts', label: '하트 뿅뿅', icon: '💕' },
+          { type: 'effect', val: 'none', label: '이펙트 없음', icon: '❌' }
         ];
       } else if (currentStudioTab === 'fantasy') {
         items = [
-          { type: 'skinTone', val: 'fair', label: '살구피부', icon: '🧑' },
-          { type: 'skinTone', val: 'porcelain', label: '백옥피부', icon: '⚪' },
-          { type: 'skinTone', val: 'tan', label: '태닝피부', icon: '🏽' },
-          { type: 'skinTone', val: 'slime_green', label: '슬라임민트', icon: '🟢' },
-          { type: 'baseType', val: 'human', label: '인간', icon: '🧑' },
-          { type: 'baseType', val: 'elf', label: '엘프귀', icon: '🧝' },
-          { type: 'baseType', val: 'cat', label: '고양이', icon: '🐱' }
+          { type: 'skinTone', val: 'fair', label: '뽀송 살구피부', icon: '🧑' },
+          { type: 'skinTone', val: 'peach', label: '생기 피치피부', icon: '🍑' },
+          { type: 'skinTone', val: 'porcelain', label: '백옥 도자기피부', icon: '⚪' },
+          { type: 'skinTone', val: 'tan', label: '건강 구릿빛 태닝', icon: '🏽' },
+          { type: 'skinTone', val: 'chocolate', label: '초콜릿 브라운', icon: '🍫' },
+          { type: 'skinTone', val: 'slime_green', label: '신비 슬라임 민트', icon: '🟢' },
+          { type: 'skinTone', val: 'lilac', label: '요정 라일락 퍼플', icon: '🟣' },
+          { type: 'baseType', val: 'human', label: '인간 모험가', icon: '🧑' },
+          { type: 'baseType', val: 'elf', label: '엘프 요정귀', icon: '🧝' },
+          { type: 'baseType', val: 'cat', label: '고양이 수인', icon: '🐱' },
+          { type: 'baseType', val: 'bunny', label: '토끼 수인 쫑긋귀', icon: '🐰' },
+          { type: 'baseType', val: 'demon', label: '데몬 뿔과 꼬리', icon: '😈', reqLv: 2 }
         ];
-      }
-
-      items.forEach(it => {
-        const isLocked = it.reqLv && state.level < it.reqLv;
-        const isActive = studioDraft[it.type] === it.val;
-        const card = document.createElement('div');
-        card.className = `studio-item-card ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
-        card.innerHTML = `
-          <div style="font-size:20px;">${it.icon}</div>
-          <div style="font-size:11px; font-weight:bold; margin-top:2px;">${it.label}</div>
-          ${it.reqLv ? `<div style="font-size:9px; color:${isLocked?'#D32F2F':'#388E3C'};">Lv.${it.reqLv}</div>` : ''}
-        `;
-        card.onclick = () => {
-          if (isLocked) return showAlert(`🔒 Lv.${it.reqLv} 이상 달성 시 해금되는 아이템입니다!`);
-          AudioFX.playClick();
-          studioDraft[it.type] = it.val;
-          renderStudioPreview();
-          renderStudioItems();
-        };
-        container.appendChild(card);
-      });
-    }
-
-    function randomizeAvatar() {
-      AudioFX.playFanfare();
-      const keys = Object.keys(avatarPresets);
-      const randKey = keys[Math.floor(Math.random() * keys.length)];
-      studioDraft = { ...avatarPresets[randKey] };
-      renderStudioPreview(); renderStudioItems();
-      showToast('🎲 랜덤 추천 프리셋 코디 적용!');
-    }
-
-    function resetCurrentTabItems() {
-      AudioFX.playClick();
-      if (currentStudioTab === 'hair') { studioDraft.hairFront = 'bangs_straight'; studioDraft.hairBack = 'short_neat'; }
-      else if (currentStudioTab === 'face') { studioDraft.eyes = 'sparkle'; studioDraft.expression = 'happy'; }
-      else if (currentStudioTab === 'outfit') { studioDraft.top = 'maple_tee'; studioDraft.bottom = 'denim_shorts'; }
-      else if (currentStudioTab === 'headwear') { studioDraft.hat = 'none'; studioDraft.cape = 'none'; }
-      renderStudioPreview(); renderStudioItems();
-    }
-
-    function setStudioBg(theme) {
-      const stage = document.getElementById('studio-avatar-stage');
-      if (theme === 'henesys') stage.style.background = 'linear-gradient(180deg, #81D4FA 0%, #C8E6C9 60%, #81C784 100%)';
-      else if (theme === 'ellinia') stage.style.background = 'linear-gradient(180deg, #5C6BC0 0%, #7E57C2 60%, #2E7D32 100%)';
-      else if (theme === 'kerning') stage.style.background = 'linear-gradient(180deg, #263238 0%, #37474F 60%, #1A237E 100%)';
-    }
-
-    function renderLoginAvatarPreview() {
-      const box = document.getElementById('login-avatar-preview');
-      if (box) box.innerHTML = generateAvatarSvg(state.avatar, { size: 105, anim: 'idle' });
-    }
-
-    function selectLoginPreset(key) {
-      AudioFX.playClick();
-      if (avatarPresets[key]) state.avatar = { ...avatarPresets[key] };
-      document.querySelectorAll('#login-preset-grid .opt-chip').forEach(el => el.classList.remove('active'));
-      event.target.classList.add('active');
-      renderLoginAvatarPreview();
-    }
-
-    function loginAndStart() {
-      const id = document.getElementById('input-id').value.trim();
-      const name = document.getElementById('input-name').value.trim();
-      if (!id || !name) return showAlert('학번과 이름을 모두 입력해주세요! 💖');
-      AudioFX.playFanfare();
-      state.userId = id; state.userName = name; state.startTime = Date.now();
-      saveState();
-      document.getElementById('login-modal').style.display = 'none';
-      updateAllUi();
-      initStage1();
-    }
-
-    /* =========================================================================
-       STAGE 1: CODEX
-       ========================================================================= */
-    let overlayIndex = 0; let closeTimer = null;
-    function initStage1() {
-      const grid = document.getElementById('flashcard-grid');
-      grid.innerHTML = '';
-      document.getElementById('st1-progress').innerText = state.st1Clicked.length;
-
-      vocabData.forEach((item, idx) => {
-        const isClicked = state.st1Clicked.includes(item.id);
-        const card = document.createElement('div');
-        card.id = `fcard-${item.id}`;
-        card.className = `ms-card ${isClicked ? 'completed' : ''}`;
-        card.innerHTML = `
-          <div style="font-size:15px; font-weight:900; color:var(--ms-dark-blue);">${item.word}</div>
-          <div style="font-size:11px; color:var(--ms-header-blue); font-weight:bold; margin-top:2px;">[${item.pron}]</div>
-        `;
-        card.onclick = () => { overlayIndex = idx; openCardOverlay(item); };
-        grid.appendChild(card);
-      });
-      if (state.st1Clicked.length >= vocabData.length) document.getElementById('st1-next-btn').disabled = false;
-    }
-
-    function openCardOverlay(item) {
-      AudioFX.playClick();
-      if (!state.st1Clicked.includes(item.id)) {
-        state.st1Clicked.push(item.id); addExp(3); saveState();
-        document.getElementById('st1-progress').innerText = state.st1Clicked.length;
-        const c = document.getElementById(`fcard-${item.id}`); if (c) c.classList.add('completed');
-      }
-
-      document.getElementById('ov-word').innerText = item.word;
-      document.getElementById('ov-pron').innerText = `[${item.pron}]`;
-      document.getElementById('ov-meaning').innerText = item.meaning;
-      document.getElementById('ov-ex').innerText = item.ex;
-      document.getElementById('ov-ex-kor').innerText = item.exKor;
-
-      document.getElementById('ov-tts-word').onclick = () => speakText(item.word);
-      document.getElementById('ov-tts-ex').onclick = () => speakText(item.ex);
-
-      const closeX = document.getElementById('ov-close-x');
-      const timerBadge = document.getElementById('ov-timer-badge');
-      closeX.style.display = 'none'; timerBadge.style.display = 'inline-block';
-      
-      let sec = 3; timerBadge.innerText = `⏳ 단어 확인 중... (${sec}초)`;
-      if (closeTimer) clearInterval(closeTimer);
-      closeTimer = setInterval(() => {
-        sec--;
-        if (sec > 0) timerBadge.innerText = `⏳ 단어 확인 중... (${sec}초)`;
-        else { clearInterval(closeTimer); timerBadge.style.display = 'none'; closeX.style.display = 'block'; }
       }, 1000);
 
       document.getElementById('card-overlay').style.display = 'flex';
