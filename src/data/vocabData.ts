@@ -1,0 +1,51 @@
+import { VocabItem, BadgeItem } from '../types/game';
+
+export const vocabData: VocabItem[] = [
+  { id: 1, word: "account", pron: "어카운트", meaning: "n. (은행) 계좌", ex: "Can I withdraw some money from my savings account?", blankTarget: "account", exKor: "제 예금 계좌에서 돈을 좀 인출할 수 있나요?" },
+  { id: 2, word: "suddenly", pron: "서든리", meaning: "adv. 갑자기", ex: "The tree in my yard suddenly fell down.", blankTarget: "suddenly", exKor: "우리 집 마당에 있던 나무가 갑자기 쓰러졌다." },
+  { id: 3, word: "sell", pron: "셀", meaning: "v. 팔다, 판매하다", ex: "He's thinking of selling his bicycle and buying a new one.", blankTarget: "selling", exKor: "그는 자신의 자전거를 팔고 새것을 사려고 생각하고 있다." },
+  { id: 4, word: "add", pron: "애드", meaning: "v. 더하다, 추가하다", ex: "I always add tomatoes when eating a hamburger.", blankTarget: "add", exKor: "나는 햄버거를 먹을 때 항상 토마토를 추가한다." },
+  { id: 5, word: "act", pron: "액트", meaning: "v. 행동하다", ex: "Stop acting like a child.", blankTarget: "acting", exKor: "어린아이처럼 행동하지 마라." },
+  { id: 6, word: "post", pron: "포스트", meaning: "v. 게시하다, 올리다", ex: "Did you remember to post the notice on the school board?", blankTarget: "post", exKor: "학교 게시판에 공고문을 게시해야 하는 것을 기억했니?" },
+  { id: 7, word: "comment", pron: "코멘트", meaning: "n. 설명, 언급, 논평", ex: "Her kind comment was helpful to my understanding the story.", blankTarget: "comment", exKor: "그녀의 친절한 설명은 내가 그 이야기를 이해하는 데 도움이 되었다." },
+  { id: 8, word: "shiny", pron: "샤이니", meaning: "adj. 빛나는, 반짝거리는", ex: "My dad is wearing shiny new shoes.", blankTarget: "shiny", exKor: "우리 아빠는 빛나는 새 구두를 신고 계신다." },
+  { id: 9, word: "advertisement", pron: "애드버타이즈먼트", meaning: "n. 광고", ex: "They're putting an advertisement in major newspapers.", blankTarget: "advertisement", exKor: "그들은 주요 신문들에 광고를 실을 것이다." },
+  { id: 10, word: "expectation", pron: "익스펙테이션", meaning: "n. 기대", ex: "The show was much better than my expectations.", blankTarget: "expectations", exKor: "그 공연은 내 기대 이상이었다." },
+  { id: 11, word: "sink", pron: "싱크", meaning: "v. 가라앉다, (마음이) 내려앉다", ex: "My paper boat sank into the muddy water.", blankTarget: "sank", exKor: "내 종이배가 흙탕물에 가라앉았다." },
+  { id: 12, word: "attractive", pron: "어트랙티브", meaning: "adj. 매력적인", ex: "That park is an attractive place for a picnic.", blankTarget: "attractive", exKor: "그 공원은 소풍 가기에 매력적인 장소이다." },
+  { id: 13, word: "search", pron: "서치", meaning: "v. 찾다, 검색하다", ex: "To search for information, most people use the Internet.", blankTarget: "search", exKor: "정보를 검색하기 위해 대부분의 사람들은 인터넷을 사용한다." },
+  { id: 14, word: "hasty", pron: "헤이스티", meaning: "adj. 성급한", ex: "She soon regretted her hasty decision.", blankTarget: "hasty", exKor: "그녀는 곧 자신의 성급한 결정을 후회했다." },
+  { id: 15, word: "greedy", pron: "그리디", meaning: "adj. 욕심 많은", ex: "Tony was an ambitious and greedy boy.", blankTarget: "greedy", exKor: "토니는 야망 있고 욕심 많은 소년이었다." },
+  { id: 16, word: "description", pron: "디스크립션", meaning: "n. 묘사, 설명", ex: "Her description of the island was very detailed.", blankTarget: "description", exKor: "섬에 대한 그녀의 묘사는 매우 상세했다." },
+  { id: 17, word: "angle", pron: "앵글", meaning: "n. 각도", ex: "He took pictures at different angles.", blankTarget: "angles", exKor: "그는 다른 각도에서 사진을 찍었다." },
+  { id: 18, word: "scratch", pron: "스크래치", meaning: "n. 긁힌 자국, 스크래치", ex: "I found some scratches on my laptop.", blankTarget: "scratches", exKor: "나는 노트북에 긁힌 자국이 몇 개 있는 것을 발견했다." },
+  { id: 19, word: "ask for", pron: "아스크 포", meaning: "~을 요청하다", ex: "I asked for extra blankets.", blankTarget: "asked for", exKor: "나는 담요를 몇 장 더 요청했다." },
+  { id: 20, word: "accept", pron: "악셉트", meaning: "v. 받아들이다", ex: "Andy accepted my apology.", blankTarget: "accepted", exKor: "앤디는 내 사과를 받아들였다." },
+  { id: 21, word: "hand over", pron: "핸드 오버", meaning: "건네주다", ex: "The mail carrier handed over a package.", blankTarget: "handed over", exKor: "우편배달부가 소포를 건네주었다." },
+  { id: 22, word: "grow up", pron: "그로우 업", meaning: "성장하다, 자라다", ex: "Children should eat various vegetables to grow up well.", blankTarget: "grow up", exKor: "아이들은 잘 자라기 위해 다양한 채소를 먹어야 한다." },
+  { id: 23, word: "through", pron: "쓰루", meaning: "prep. ~을 통해", ex: "He's looking at the rainbow through the window.", blankTarget: "through", exKor: "그는 창문을 통해 무지개를 보고 있다." },
+  { id: 24, word: "experience", pron: "익스피리언스", meaning: "n. 경험", ex: "Doing volunteer work was a very meaningful experience for me.", blankTarget: "experience", exKor: "봉사활동은 나에게 매우 의미 있는 경험이었다." },
+  { id: 25, word: "ahead", pron: "어헤드", meaning: "prep./adv. 앞으로", ex: "Look ahead when you walk across the street.", blankTarget: "ahead", exKor: "길을 건널 때는 앞을 보세요." },
+  { id: 26, word: "category", pron: "카테고리", meaning: "n. 범주, 부류", ex: "Books are arranged by category in the library.", blankTarget: "category", exKor: "도서관의 책들은 범주별로 정렬되어 있다." },
+  { id: 27, word: "contact", pron: "콘택트", meaning: "n. 연락, 접촉", ex: "I lost contact with her.", blankTarget: "contact", exKor: "나는 그녀와 연락이 끊겼다." },
+  { id: 28, word: "deliver", pron: "디리버", meaning: "v. 배달하다", ex: "They deliver fresh milk every morning.", blankTarget: "deliver", exKor: "그들은 매일 아침 신선한 우유를 배달한다." },
+  { id: 29, word: "dig", pron: "디그", meaning: "v. (땅을) 파다, 캐다", ex: "Dogs like to dig holes in the garden.", blankTarget: "dig", exKor: "개들은 정원에 구덩이를 파는 것을 좋아한다." },
+  { id: 30, word: "excellent", pron: "엑설런트", meaning: "adj. 훌륭한; (상품 상태가) 매우 좋은", ex: "Used bike in excellent condition.", blankTarget: "excellent", exKor: "상태가 매우 좋은 중고 자전거입니다." },
+  { id: 31, word: "excuse", pron: "익스큐즈", meaning: "v. 용서하다, n. 실례", ex: "Excuse me, I want to return these sneakers.", blankTarget: "Excuse", exKor: "실례합니다. 이 운동화를 반품하고 싶어요." },
+  { id: 32, word: "lend", pron: "랜드", meaning: "v. 빌려주다", ex: "Can you lend it to me?", blankTarget: "lend", exKor: "그것을 나에게 빌려줄 수 있나요?" },
+  { id: 33, word: "mix", pron: "믹스", meaning: "v. 섞다", ex: "Mix the flour and water together.", blankTarget: "Mix", exKor: "밀가루와 물을 함께 섞으세요." },
+  { id: 34, word: "normally", pron: "노멀리", meaning: "adv. 보통", ex: "Normally, the shop opens at nine o'clock.", blankTarget: "Normally", exKor: "보통 그 가게는 9시에 문을 연다." },
+  { id: 35, word: "recommend", pron: "레코멘드", meaning: "v. 추천하다", ex: "You should check used bookstores online.", blankTarget: "check", exKor: "온라인 중고 서점을 확인해 보는 게 좋겠어요." },
+  { id: 36, word: "sale", pron: "세일", meaning: "n. 판매; 할인 판매", ex: "Seyun's First Online Sale", blankTarget: "Sale", exKor: "세윤의 첫 온라인 판매" },
+  { id: 37, word: "shut", pron: "셔트", meaning: "v. 닫다", ex: "Do you mind if I shut the blinds?", blankTarget: "shut", exKor: "블라인드를 내려도 될까요?" },
+  { id: 38, word: "steal", pron: "스틸", meaning: "v. 훔치다", ex: "It is wrong to steal other people's money.", blankTarget: "steal", exKor: "다른 사람의 돈을 훔치는 것은 잘못된 일이다." },
+  { id: 39, word: "ugly", pron: "어글리", meaning: "adj. 못생긴", ex: "The ugly duckling became a beautiful swan.", blankTarget: "ugly", exKor: "못생긴 아기 오리는 아름다운 백조가 되었다." }
+];
+
+export const badgeData: BadgeItem[] = [
+  { id: 'b1', icon: '🐣', name: '첫걸음', desc: '1단계 도감 수집 완수' },
+  { id: 'b2', icon: '🔥', name: '연속 정답왕', desc: '5연속 정답 FEVER 달성' },
+  { id: 'b3', icon: '⚡', name: '스피드 레이서', desc: '4단계 AI 대결 승리' },
+  { id: 'b4', icon: '🛡️', name: '하트 수호자', desc: '하트 차감 없이 클리어' },
+  { id: 'b5', icon: '👑', name: '메이플 마스터', desc: '6단계 수료증 발급' }
+];

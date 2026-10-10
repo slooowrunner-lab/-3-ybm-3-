@@ -1,0 +1,480 @@
+/**
+ * Maple Words RPG - Lesson 6: Buy and Sell Wisely
+ * Modular Avatar Creator Engine & MMORPG Vocabulary Adventure
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import confetti from 'canvas-confetti';
+import { GameState, BadgeItem, VocabItem } from './types/game';
+import { AvatarConfig } from './types/avatar';
+import { vocabData, badgeData } from './data/vocabData';
+import { DEFAULT_AVATAR_CONFIG } from './data/avatarItems';
+import { soundEngine } from './utils/audio';
+
+import { Header } from './components/layout/Header';
+import { LeftSidebar, RightSidebar } from './components/layout/Sidebar';
+import { AvatarStudioModal } from './components/avatar/AvatarStudioModal';
+import { LoginModal } from './components/auth/LoginModal';
+
+import { Stage1Codex } from './components/game/Stage1Codex';
+import { Stage2Quiz } from './components/game/Stage2Quiz';
+import { Stage3Match } from './components/game/Stage3Match';
+import { Stage4Race } from './components/game/Stage4Race';
+import { Stage5Blank } from './components/game/Stage5Blank';
+import { Stage6Certificate } from './components/game/Stage6Certificate';
+
+export default function App() {
+  const [gameState, setGameState] = useState<GameState>(() => {
+    const lastUser = localStorage.getItem('ms_vocab_last_user');
+    if (lastUser) {
+      const saved = localStorage.getItem(`ms_vocab_app_${lastUser}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return {
+            userId: parsed.userId || '',
+            userName: parsed.userName || '',
+            unlockedStage: parsed.unlockedStage || 1,
+            currentStage: parsed.currentStage || 1,
+            switchCount: parsed.switchCount || 0,
+            startTime: parsed.startTime || Date.now(),
+            st1Clicked: parsed.st1Clicked || [],
+            wrongCounts: parsed.wrongCounts || {},
+            selectedLevel: parsed.selectedLevel || 'S',
+            level: parsed.level || 1,
+            exp: parsed.exp || 0,
+            avatar: parsed.avatar || DEFAULT_AVATAR_CONFIG,
+            stageStars: parsed.stageStars || {},
+            badges: parsed.badges || {}
+          };
+        } catch {
+          // parse failsafe
+        }
+      }
+    }
+    return {
+      userId: '',
+      userName: '',
+      unlockedStage: 1,
+      currentStage: 1,
+      switchCount: 0,
+      startTime: Date.now(),
+      st1Clicked: [],
+      wrongCounts: {},
+      selectedLevel: 'S',
+      level: 1,
+      exp: 0,
+      avatar: DEFAULT_AVATAR_CONFIG,
+      stageStars: {},
+      badges: {}
+    };
+  });
+
+  const [isLoginOpen, setIsLoginOpen] = useState(() => !gameState.userId);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [isBgmActive, setIsBgmActive] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [stageClearModal, setStageClearModal] = useState<{ stageNum: number; stars: number } | null>(null);
+  const [badgeModal, setBadgeModal] = useState<{ badge: BadgeItem; isUnlocked: boolean } | null>(null);
+  const [mobileSidebar, setMobileSidebar] = useState<'none' | 'left' | 'right'>('none');
+
+  // Save game state
+  useEffect(() => {
+    if (gameState.userId) {
+      localStorage.setItem(`ms_vocab_app_${gameState.userId}`, JSON.stringify(gameState));
+      localStorage.setItem('ms_vocab_last_user', gameState.userId);
+    }
+  }, [gameState]);
+
+  // Tab switch listener
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && gameState.userId) {
+        setGameState((prev) => ({
+          ...prev,
+          switchCount: prev.switchCount + 1
+        }));
+        showToast('✨ 화면 이탈 감지! 스스로 해봅시다! 💖');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [gameState.userId]);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2800);
+  };
+
+  const addExp = useCallback((amount: number) => {
+    setGameState((prev) => {
+      let nextExp = prev.exp + amount;
+      let nextLevel = prev.level;
+
+      if (nextExp >= 100) {
+        nextLevel += 1;
+        nextExp -= 100;
+        soundEngine.playFanfare();
+        confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+        showToast(`🎉 LEVEL UP! Lv.${nextLevel} 달성! 새로운 드레스룸 아이템 해금! ✨`);
+      }
+
+      return {
+        ...prev,
+        exp: nextExp,
+        level: nextLevel
+      };
+    });
+  }, []);
+
+  const unlockBadge = useCallback(
+    (badgeId: string) => {
+      setGameState((prev) => {
+        if (prev.badges[badgeId]) return prev;
+        const b = badgeData.find((item) => item.id === badgeId);
+        if (b) {
+          showToast(`🏆 업적 달성! [${b.name}] 배지를 획득했습니다! ✨`);
+          addExp(15);
+        }
+        return {
+          ...prev,
+          badges: {
+            ...prev.badges,
+            [badgeId]: true
+          }
+        };
+      });
+    },
+    [addExp]
+  );
+
+  const handleStageClear = (stageNum: number, heartsLeft: number) => {
+    let stars = 3;
+    if (heartsLeft === 2) stars = 2;
+    if (heartsLeft <= 1) stars = 1;
+
+    soundEngine.playFanfare();
+    confetti({ particleCount: 100, spread: 85, origin: { y: 0.6 } });
+
+    if (stageNum === 1) unlockBadge('b1');
+    if (heartsLeft === 3 && stageNum >= 2 && stageNum <= 5) unlockBadge('b4');
+    if (stageNum === 4) unlockBadge('b3');
+    if (stageNum === 6) unlockBadge('b5');
+
+    setGameState((prev) => {
+      const nextUnlocked = Math.max(prev.unlockedStage, stageNum + 1);
+      const currentStar = prev.stageStars[stageNum] || 0;
+      return {
+        ...prev,
+        unlockedStage: nextUnlocked,
+        stageStars: {
+          ...prev.stageStars,
+          [stageNum]: Math.max(currentStar, stars)
+        }
+      };
+    });
+
+    setStageClearModal({ stageNum, stars });
+  };
+
+  const handleCloseClearModal = () => {
+    if (!stageClearModal) return;
+    const nextStage = stageClearModal.stageNum + 1;
+    setStageClearModal(null);
+    if (nextStage <= 6) {
+      setGameState((prev) => ({ ...prev, currentStage: nextStage }));
+    }
+  };
+
+  const logWrongWord = (word: string) => {
+    setGameState((prev) => ({
+      ...prev,
+      wrongCounts: {
+        ...prev.wrongCounts,
+        [word]: (prev.wrongCounts[word] || 0) + 1
+      }
+    }));
+  };
+
+  const handleLogin = (id: string, name: string, avatar: AvatarConfig) => {
+    setGameState((prev) => ({
+      ...prev,
+      userId: id,
+      userName: name,
+      avatar,
+      startTime: Date.now()
+    }));
+    setIsLoginOpen(false);
+    showToast(`👑 ${name} 용사님, 메이플 어휘 모험에 오신 것을 환영합니다!`);
+  };
+
+  const handleTeacherAdmin = () => {
+    const pw = prompt('교사 관리자 비밀번호를 입력하세요:');
+    if (pw === '0111') {
+      setGameState((prev) => ({
+        ...prev,
+        unlockedStage: 6,
+        currentStage: 6
+      }));
+      soundEngine.playFanfare();
+      alert('🔓 교사 모드가 활성화되었습니다! 모든 단계가 해금되었습니다.');
+    } else if (pw !== null) {
+      alert('비밀번호가 일치하지 않습니다.');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#85C1E9] bg-gradient-to-b from-[#85C1E9] via-[#A9CCE3] to-[#7FB3D5] text-[#111B27] pb-10 select-none">
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#FCE868] text-[#111B27] border-3 border-[#111B27] rounded-lg px-6 py-3 font-black text-sm shadow-[4px_4px_0_#000] animate-bounce">
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Top Header */}
+      <Header
+        userId={gameState.userId}
+        userName={gameState.userName}
+        level={gameState.level}
+        isBgmActive={isBgmActive}
+        onToggleBgm={() => {
+          soundEngine.toggleBgm((active) => setIsBgmActive(active));
+        }}
+        onOpenAvatarStudio={() => setIsStudioOpen(true)}
+      />
+
+      {/* Mobile Sidebar Nav Toggles */}
+      <div className="flex md:hidden justify-center gap-2 my-2.5 px-4">
+        <button
+          onClick={() => setMobileSidebar(mobileSidebar === 'left' ? 'none' : 'left')}
+          className={`px-3 py-1.5 text-xs font-black rounded border-2 border-[#1C2D42] shadow-[2px_2px_0_#000] ${
+            mobileSidebar === 'left' ? 'bg-[#FF7E00] text-white' : 'bg-white'
+          }`}
+        >
+          📜 퀘스트 목록
+        </button>
+        <button
+          onClick={() => setMobileSidebar(mobileSidebar === 'right' ? 'none' : 'right')}
+          className={`px-3 py-1.5 text-xs font-black rounded border-2 border-[#1C2D42] shadow-[2px_2px_0_#000] ${
+            mobileSidebar === 'right' ? 'bg-[#FF7E00] text-white' : 'bg-white'
+          }`}
+        >
+          👤 캐릭터 정보
+        </button>
+      </div>
+
+      {/* Main 3-Column Persistent Game Layout */}
+      <div className="max-w-[1400px] mx-auto my-4 px-3 sm:px-4 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr_300px] gap-4 items-start">
+        {/* LEFT QUEST LOG */}
+        <LeftSidebar
+          unlockedStage={gameState.unlockedStage}
+          currentStage={gameState.currentStage}
+          stageStars={gameState.stageStars}
+          onSelectStage={(s) => {
+            soundEngine.playClick();
+            setGameState((prev) => ({ ...prev, currentStage: s }));
+            setMobileSidebar('none');
+          }}
+          isOpenMobile={mobileSidebar === 'left'}
+        />
+
+        {/* CENTER MAIN WORKSPACE */}
+        <main className="bg-[#F7FBFE] border-3 border-[#3A516B] rounded-xl shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.2),inset_2px_2px_0_rgba(255,255,255,0.7),4px_4px_0_#111B27] p-4 sm:p-6 min-h-[660px]">
+          {gameState.currentStage === 1 && (
+            <Stage1Codex
+              vocabList={vocabData}
+              clickedIds={gameState.st1Clicked}
+              onCardClick={(item) => {
+                setGameState((prev) => {
+                  if (prev.st1Clicked.includes(item.id)) return prev;
+                  addExp(3);
+                  return {
+                    ...prev,
+                    st1Clicked: [...prev.st1Clicked, item.id]
+                  };
+                });
+              }}
+              onCompleteStage1={() => handleStageClear(1, 3)}
+            />
+          )}
+
+          {gameState.currentStage === 2 && (
+            <Stage2Quiz
+              vocabList={vocabData}
+              onCorrectAnswer={() => addExp(5)}
+              onWrongAnswer={(word) => logWrongWord(word)}
+              onStageClear={(hearts) => handleStageClear(2, hearts)}
+              onRestart={() => {
+                setGameState((prev) => ({ ...prev, currentStage: 2 }));
+              }}
+            />
+          )}
+
+          {gameState.currentStage === 3 && (
+            <Stage3Match
+              vocabList={vocabData}
+              onCorrectMatch={() => addExp(5)}
+              onWrongMatch={(word) => logWrongWord(word)}
+              onStageClear={(hearts) => handleStageClear(3, hearts)}
+              onRestart={() => {
+                setGameState((prev) => ({ ...prev, currentStage: 3 }));
+              }}
+            />
+          )}
+
+          {gameState.currentStage === 4 && (
+            <Stage4Race
+              vocabList={vocabData}
+              avatarConfig={gameState.avatar}
+              onCorrectSubmit={() => addExp(5)}
+              onWrongSubmit={(word) => logWrongWord(word)}
+              onStageClear={(hearts) => handleStageClear(4, hearts)}
+              onRestart={() => {
+                setGameState((prev) => ({ ...prev, currentStage: 4 }));
+              }}
+            />
+          )}
+
+          {gameState.currentStage === 5 && (
+            <Stage5Blank
+              vocabList={vocabData}
+              onCorrectSubmit={() => addExp(5)}
+              onWrongSubmit={(word) => logWrongWord(word)}
+              onStageClear={(hearts) => handleStageClear(5, hearts)}
+              onRestart={() => {
+                setGameState((prev) => ({ ...prev, currentStage: 5 }));
+              }}
+            />
+          )}
+
+          {gameState.currentStage === 6 && (
+            <Stage6Certificate
+              userId={gameState.userId}
+              userName={gameState.userName}
+              level={gameState.level}
+              startTime={gameState.startTime}
+              switchCount={gameState.switchCount}
+              wrongCounts={gameState.wrongCounts}
+              selectedLevel={gameState.selectedLevel}
+              avatarConfig={gameState.avatar}
+              vocabList={vocabData}
+            />
+          )}
+        </main>
+
+        {/* RIGHT CHARACTER PROFILE */}
+        <RightSidebar
+          userName={gameState.userName}
+          level={gameState.level}
+          exp={gameState.exp}
+          switchCount={gameState.switchCount}
+          avatarConfig={gameState.avatar}
+          badges={badgeData}
+          unlockedBadges={gameState.badges}
+          onOpenAvatarStudio={() => setIsStudioOpen(true)}
+          onBadgeClick={(badge, isUnlocked) => {
+            soundEngine.playClick();
+            setBadgeModal({ badge, isUnlocked });
+          }}
+          isOpenMobile={mobileSidebar === 'right'}
+        />
+      </div>
+
+      {/* Footer */}
+      <footer className="text-center text-xs font-bold text-gray-700 mt-6">
+        🎉 MapleStory Educational RPG Designed for Lesson 6 // Curated with Modular Avatar Studio 💖
+      </footer>
+
+      {/* Secret Teacher Mode Trigger */}
+      <button
+        onClick={handleTeacherAdmin}
+        className="fixed bottom-2.5 right-2.5 bg-white/90 hover:bg-white text-gray-800 border-2 border-black rounded px-2.5 py-1 text-[11px] font-bold shadow-md z-30"
+      >
+        🔑 교사모드
+      </button>
+
+      {/* Login & Character Creation Modal */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onLogin={handleLogin}
+        onOpenStudio={() => setIsStudioOpen(true)}
+        customAvatarConfig={gameState.avatar}
+      />
+
+      {/* Modular Avatar Studio Modal */}
+      <AvatarStudioModal
+        initialConfig={gameState.avatar}
+        userLevel={gameState.level}
+        isOpen={isStudioOpen}
+        onSave={(newConfig) => {
+          setGameState((prev) => ({
+            ...prev,
+            avatar: newConfig
+          }));
+          showToast('✨ 아바타 커스텀 코디가 성공적으로 저장되었습니다! 🍁');
+        }}
+        onClose={() => setIsStudioOpen(false)}
+      />
+
+      {/* Stage Clear Celebration Modal */}
+      {stageClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-[#FFF9C4] border-4 border-[#FF7E00] rounded-2xl p-7 w-full max-w-sm text-center shadow-[8px_8px_0_#111B27]">
+            <div className="text-2xl font-black text-[#D32F2F] border-4 border-dashed border-[#D32F2F] bg-[#FFEBEE] py-2 px-6 rounded-lg inline-block -rotate-6 font-['DungGeunMo'] mb-4 shadow-sm animate-bounce">
+              STAGE CLEAR!
+            </div>
+            <div className="text-4xl my-3">
+              {'⭐'.repeat(stageClearModal.stars)}
+              {'☆'.repeat(3 - stageClearModal.stars)}
+            </div>
+            <p className="text-sm font-bold text-[#1C2D42] mb-6 leading-relaxed">
+              🎉 Stage {stageClearModal.stageNum} 완수 성공!
+              <br />
+              다음 메이플 어휘 퀘스트가 열렸습니다!
+            </p>
+            <button
+              onClick={handleCloseClearModal}
+              className="w-full py-3.5 bg-gradient-to-r from-[#FF9800] to-[#F57C00] hover:from-[#FFA726] hover:to-[#FB8C00] text-white font-black text-base rounded-xl border-3 border-black shadow-[3px_3px_0_#000] font-['DungGeunMo'] tracking-wide"
+            >
+              다음 퀘스트로! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Badge Detail Modal */}
+      {badgeModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setBadgeModal(null)}
+        >
+          <div
+            className="bg-[#F7FBFE] border-4 border-[#1C2D42] rounded-xl p-6 w-full max-w-sm text-center shadow-[6px_6px_0_rgba(0,0,0,0.4)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-2">{badgeModal.badge.icon}</div>
+            <h3 className="text-lg font-black text-[#1C2D42] mb-1">[{badgeModal.badge.name}]</h3>
+            <p className="text-xs font-bold text-gray-600 mb-4">{badgeModal.badge.desc}</p>
+            <div
+              className={`text-xs font-black py-1.5 px-3 rounded-full inline-block mb-5 ${
+                badgeModal.isUnlocked
+                  ? 'bg-green-100 text-green-800 border border-green-400'
+                  : 'bg-gray-200 text-gray-600 border border-gray-400'
+              }`}
+            >
+              {badgeModal.isUnlocked ? '✨ 업적 획득 완료!' : '🔒 아직 획득하지 못했습니다'}
+            </div>
+            <button
+              onClick={() => setBadgeModal(null)}
+              className="w-full py-2 bg-[#FF9800] text-white font-bold text-sm rounded-lg border-2 border-black shadow-[2px_2px_0_#000]"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

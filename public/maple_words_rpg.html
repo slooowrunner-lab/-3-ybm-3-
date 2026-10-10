@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAPLE WORDS RPG // LESSON 6 — BUY & SELL WISELY</title>
+  <!-- Google Fonts: DungGeunMo (Pixel Font) & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DungGeunMo&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --ms-orange: #FF7E00;
+      --ms-orange-dark: #D46300;
+      --ms-yellow: #FCE868;
+      --ms-blue-bg: #E3F2FD;
+      --ms-panel-bg: #F7FBFE;
+      --ms-panel-border: #3A516B;
+      --ms-header-blue: #4A90E2;
+      --ms-dark-blue: #1C2D42;
+      --ms-green: #4CAF50;
+      --ms-pink: #FF6B8B;
+      --ms-gray: #A0B2C6;
+      --ms-white: #FFFFFF;
+      --ms-black: #111B27;
+      --pixel-border: 3.5px solid var(--ms-panel-border);
+      --pixel-box-shadow: inset -2px -2px 0px rgba(0,0,0,0.2), inset 2px 2px 0px rgba(255,255,255,0.7), 4px 4px 0px var(--ms-black);
+    }
+
+    * { box-sizing: border-box; font-family: 'Noto Sans KR', sans-serif; margin: 0; padding: 0; }
+    .pixel-font { font-family: 'DungGeunMo', monospace !important; }
+
+    body {
+      background-color: #85C1E9;
+      background-image: 
+        linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(255,255,255,0.3) 0%, transparent 25%);
+      color: var(--ms-black);
+      min-height: 100vh;
+      padding-bottom: 30px;
+    }
+
+    body.fever-active { animation: feverGlow 1s infinite alternate; }
+    @keyframes feverGlow { 0% { background-color: #FFB74D; } 100% { background-color: #85C1E9; } }
+
+    header {
+      background: linear-gradient(180deg, #5296E0 0%, #2968B2 100%);
+      border-bottom: 4px solid var(--ms-dark-blue);
+      padding: 10px 18px; color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      position: sticky; top: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .game-logo { display: flex; align-items: center; gap: 10px; }
+    .game-logo-icon {
+      width: 36px; height: 36px; background: var(--ms-orange); border: 2px solid var(--ms-black);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px;
+      box-shadow: inset 1px 1px 0px #FFAA55, 2px 2px 0px #000;
+    }
+    .game-title {
+      font-size: 20px; font-weight: 900; color: var(--ms-yellow);
+      text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 3px 0 #000;
+    }
+
+    .game-container {
+      max-width: 1400px; margin: 16px auto; padding: 0 14px;
+      display: grid; grid-template-columns: 240px 1fr 290px; gap: 16px; align-items: start;
+    }
+
+    .mobile-nav-bar { display: none; justify-content: center; gap: 8px; margin: 10px 15px; }
+    .mobile-tab-btn {
+      padding: 8px 14px; background: var(--ms-panel-bg); border: 2px solid var(--ms-dark-blue);
+      font-weight: 900; font-size: 12px; cursor: pointer; border-radius: 4px; box-shadow: 2px 2px 0 #000;
+    }
+
+    .ms-panel {
+      background: var(--ms-panel-bg); border: var(--pixel-border); border-radius: 8px;
+      box-shadow: var(--pixel-box-shadow); overflow: hidden; position: relative;
+    }
+    .ms-panel-header {
+      background: linear-gradient(180deg, #5C9CE6 0%, #3672B9 100%);
+      color: white; padding: 10px 14px; font-weight: 900; font-size: 14px;
+      border-bottom: 2px solid var(--ms-dark-blue);
+      display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 0 #000;
+    }
+
+    .quest-item {
+      padding: 11px 13px; border-bottom: 1px solid #D0E1F0; cursor: not-allowed;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: all 0.15s; background: #F0F6FC; opacity: 0.7;
+    }
+    .quest-item.unlocked { cursor: pointer; opacity: 1; background: white; }
+    .quest-item.unlocked:hover { background: #E3F2FD; transform: translateX(3px); }
+    .quest-item.active { background: #FFF9C4; border-left: 6px solid var(--ms-orange); opacity: 1; }
+    .quest-title { font-size: 13px; font-weight: 800; color: var(--ms-black); }
+    .quest-star-badge { font-size: 11px; color: #FFB300; margin-top: 2px; }
+    .quest-badge {
+      font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; border: 1px solid var(--ms-black);
+    }
+    .badge-clear { background: var(--ms-green); color: white; }
+    .badge-progress { background: var(--ms-orange); color: white; }
+    .badge-lock { background: var(--ms-gray); color: white; }
+
+    .main-workspace { min-height: 650px; padding: 20px; }
+
+    .npc-dialog-box {
+      background: #FFFDE7; border: 3px solid #FBC02D; border-radius: 8px; padding: 12px 16px;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.06), 2px 2px 0 rgba(0,0,0,0.1);
+    }
+    .npc-portrait {
+      width: 48px; height: 48px; background: var(--ms-orange); border: 2px solid var(--ms-black);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    .profile-card { text-align: center; padding: 16px; background: white; border-bottom: 2px solid #D0E1F0; }
+    .avatar-display-box {
+      width: 140px; height: 140px; margin: 0 auto 10px auto; background: #EBF5FB;
+      border: 3px solid var(--ms-panel-border); border-radius: 10px; position: relative;
+      box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .exp-container {
+      background: #E0E0E0; border: 2px solid var(--ms-black); height: 18px; border-radius: 9px;
+      overflow: hidden; position: relative; margin: 8px 0 6px 0;
+    }
+    .exp-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #76FF03, #00E676); transition: width 0.3s; }
+    .exp-text {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; font-size: 10px;
+      font-weight: 900; color: #000; display: flex; align-items: center; justify-content: center;
+    }
+
+    .custom-options-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    .opt-chip {
+      background: white; border: 2px solid #B0BEC5; padding: 6px 2px; font-size: 11px; font-weight: bold;
+      border-radius: 4px; cursor: pointer; text-align: center; transition: all 0.15s; position: relative;
+    }
+    .opt-chip.locked { opacity: 0.5; background: #ECEFF1; border-color: #B0BEC5; filter: grayscale(80%); }
+    .opt-chip:hover:not(.locked), .opt-chip.active {
+      border-color: var(--ms-orange); background: #FFF3E0; color: var(--ms-orange-dark); transform: scale(1.04);
+    }
+
+    .stage-clear-stamp {
+      font-size: 28px; font-weight: 900; color: #D32F2F; border: 4px dashed #D32F2F;
+      display: inline-block; padding: 8px 24px; transform: rotate(-6deg); margin-bottom: 12px;
+      animation: stampIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      box-shadow: 0 0 12px rgba(211, 47, 47, 0.3); background: #FFEBEE;
+    }
+    @keyframes stampIn { 0% { transform: rotate(-6deg) scale(2.2); opacity: 0; } 100% { transform: rotate(-6deg) scale(1); opacity: 1; } }
+
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .ms-card {
+      background: white; border: 2px solid var(--ms-dark-blue); border-radius: 6px; padding: 10px 6px;
+      text-align: center; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.15); transition: all 0.15s;
+    }
+    .ms-card:hover { transform: translateY(-3px); box-shadow: 3px 5px 0px rgba(0,0,0,0.2); border-color: var(--ms-orange); }
+    .ms-card.completed { background: #E8F5E9; border-color: var(--ms-green); }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75);
+      display: flex; justify-content: center; align-items: center; z-index: 9000; backdrop-filter: blur(3px);
+    }
+    .ms-modal-box {
+      background: var(--ms-panel-bg); border: 4px solid var(--ms-dark-blue); border-radius: 10px;
+      padding: 24px 20px; width: 92%; max-width: 480px; text-align: center; position: relative;
+      box-shadow: 6px 6px 0px rgba(0,0,0,0.4); animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* Avatar Studio Modal Specific */
+    .studio-modal-box {
+      background: var(--ms-panel-bg); border: 4px solid var(--ms-dark-blue); border-radius: 12px;
+      width: 95%; max-width: 960px; height: 90vh; max-height: 820px; display: flex; flex-direction: column;
+      overflow: hidden; box-shadow: 8px 8px 0px #000; position: relative;
+    }
+    .studio-header {
+      background: linear-gradient(180deg, #4A90E2 0%, #2968B2 100%); color: white; padding: 10px 16px;
+      border-bottom: 2px solid var(--ms-dark-blue); display: flex; justify-content: space-between; align-items: center;
+    }
+    .studio-body { flex: 1; display: flex; overflow: hidden; }
+    .studio-preview-col {
+      width: 40%; background: #EBF5FB; border-right: 3px solid var(--ms-panel-border);
+      padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      overflow-y: auto;
+    }
+    .studio-controls-col { width: 60%; display: flex; flex-direction: column; background: #F7FBFE; overflow: hidden; }
+    .studio-tabs-row {
+      display: flex; background: #E3F2FD; padding: 6px; gap: 4px; overflow-x: auto; border-bottom: 2px solid #3A516B;
+    }
+    .studio-tab-btn {
+      padding: 6px 12px; font-size: 12px; font-weight: 900; background: white; border: 2px solid #B0BEC5;
+      border-radius: 6px; cursor: pointer; white-space: nowrap; transition: all 0.1s;
+    }
+    .studio-tab-btn.active {
+      background: var(--ms-orange); color: white; border-color: #000; box-shadow: 2px 2px 0 #000;
+    }
+    .studio-items-grid { flex: 1; padding: 14px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 8px; align-content: start; }
+    .studio-item-card {
+      background: white; border: 2px solid #CFD8DC; border-radius: 6px; padding: 8px 4px;
+      text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
+    }
+    .studio-item-card:hover { border-color: var(--ms-orange); transform: translateY(-2px); }
+    .studio-item-card.active { border-color: var(--ms-orange); background: #FFF3E0; box-shadow: 2px 2px 0 var(--ms-orange); }
+
+    .color-picker-bar {
+      background: #FFF9C4; padding: 8px 12px; border-bottom: 2px solid #FBC02D;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    }
+    .color-swatch-circle {
+      width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #000; cursor: pointer;
+      display: inline-block; transition: transform 0.1s;
+    }
+    .color-swatch-circle:hover { transform: scale(1.2); }
+
+    .btn-ms {
+      background: linear-gradient(180deg, #FF9800 0%, #F57C00 100%); color: white; border: 2px solid var(--ms-black);
+      padding: 10px 18px; font-weight: 900; font-size: 14px; border-radius: 6px; cursor: pointer;
+      box-shadow: inset 1px 1px 0 #FFB74D, 3px 3px 0 #000; text-shadow: 1px 1px 0 #000; transition: all 0.1s;
+    }
+    .btn-ms:hover:not(:disabled) { background: linear-gradient(180deg, #FFA726 0%, #FB8C00 100%); transform: translate(-1px, -1px); box-shadow: inset 1px 1px 0 #FFE0B2, 4px 4px 0 #000; }
+    .btn-ms:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: inset 1px 1px 0 #FB8C00, 1px 1px 0 #000; }
+    .btn-ms:disabled { background: var(--ms-gray); border-color: #78909C; color: #ECEFF1; cursor: not-allowed; box-shadow: none; }
+
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    @media (max-width: 600px) { .quiz-options { grid-template-columns: 1fr; } }
+    .opt-btn {
+      background: white; border: 2px solid var(--ms-panel-border); padding: 12px 10px; border-radius: 6px;
+      font-size: 14px; font-weight: bold; cursor: pointer; text-align: left; box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+      display: flex; align-items: center; gap: 8px; transition: all 0.15s;
+    }
+    .opt-btn:hover { background: #E3F2FD; border-color: var(--ms-header-blue); transform: translateY(-2px); }
+    .opt-num {
+      background: var(--ms-yellow); border: 2px solid var(--ms-black); border-radius: 4px; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; flex-shrink: 0;
+    }
+
+    .match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    .match-btn {
+      min-height: 52px; padding: 6px; border: 2px solid var(--ms-dark-blue); border-radius: 6px; font-size: 12px;
+      font-weight: 800; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.1); background: white; transition: all 0.15s;
+    }
+    .match-btn.card-word { background: #F3E5F5; }
+    .match-btn.card-meaning { background: #FCE4EC; }
+    .match-btn.selected { background: var(--ms-orange) !important; color: white; transform: scale(1.05); }
+    .match-btn.matched { visibility: hidden; pointer-events: none; }
+
+    .blank-input {
+      font-size: 16px; padding: 10px; border: 3px solid var(--ms-dark-blue); border-radius: 6px; width: 100%;
+      text-align: center; font-weight: bold; outline: none; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    .tts-btn {
+      background: var(--ms-yellow); border: 2px solid var(--ms-black); border-radius: 4px; width: 34px; height: 34px;
+      font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      box-shadow: 1.5px 1.5px 0 #000; flex-shrink: 0;
+    }
+
+    .toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--ms-yellow); color: #000;
+      padding: 10px 22px; border: 3px solid var(--ms-black); border-radius: 6px; font-weight: 900; display: none; z-index: 20000;
+      box-shadow: 4px 4px 0 #000; font-size: 13px;
+    }
+
+    /* Idle / Run Avatar Animations */
+    @keyframes mapleIdle {
+      0%, 100% { transform: translateY(0px) scale(1, 1); }
+      50% { transform: translateY(-4px) scale(1.01, 0.99); }
+    }
+    @keyframes mapleRun {
+      0% { transform: translateY(0px) rotate(-3deg); }
+      50% { transform: translateY(-5px) rotate(3deg); }
+      100% { transform: translateY(0px) rotate(-3deg); }
+    }
+    .anim-idle { animation: mapleIdle 1.8s ease-in-out infinite; transform-origin: bottom center; }
+    .anim-run { animation: mapleRun 0.4s linear infinite; transform-origin: bottom center; }
+
+    @media (max-width: 1024px) {
+      .game-container { grid-template-columns: 200px 1fr; }
+      .right-sidebar { display: none; }
+      .mobile-nav-bar { display: flex; }
+      .right-sidebar.mobile-open { display: block; grid-column: span 2; }
+      .studio-body { flex-direction: column; }
+      .studio-preview-col { width: 100%; border-right: none; border-bottom: 2px solid #3A516B; }
+      .studio-controls-col { width: 100%; }
+    }
+    @media (max-width: 768px) {
+      .game-container { grid-template-columns: 1fr; }
+      .left-sidebar { display: none; }
+      .left-sidebar.mobile-open { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast">✨ 스스로 해봅시다! 화이팅! 💖</div>
+
+  <!-- STAGE CLEAR MODAL -->
+  <div id="clear-modal" class="modal-overlay" style="display:none;">
+    <div class="ms-modal-box" style="background:#FFF9C4; border-color:var(--ms-orange);">
+      <div class="stage-clear-stamp pixel-font">STAGE CLEAR!</div>
+      <div style="font-size:32px; margin:8px 0;" id="clear-star-display">⭐⭐⭐</div>
+      <p id="clear-modal-msg" style="font-size:14px; font-weight:bold; color:var(--ms-dark-blue); margin-bottom:16px; line-height:1.5;"></p>
+      <button class="btn-ms pixel-font" onclick="closeClearModal()">다음 퀘스트로! 🚀</button>
+    </div>
+  </div>
+
+  <!-- LOGIN / ONBOARDING MODAL -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="ms-modal-box">
+      <div style="background:var(--ms-orange); color:white; font-size:11px; font-weight:bold; padding:2px 8px; border-radius:3px; display:inline-block; margin-bottom:6px;">MAPLE ADVENTURE START</div>
+      <h2 style="color:var(--ms-dark-blue); font-size:20px; font-weight:900; margin-bottom:10px;" class="pixel-font">캐릭터 생성 및 모험 시작 🍁</h2>
+      
+      <input type="text" id="input-id" class="blank-input" style="font-size:14px; padding:8px; margin-bottom:8px;" placeholder="학번/번호 (예: 30101)">
+      <input type="text" id="input-name" class="blank-input" style="font-size:14px; padding:8px; margin-bottom:12px;" placeholder="이름 (예: 홍길동)">
+
+      <div style="background:#EBF5FB; padding:12px; border:2px solid #3A516B; border-radius:8px; margin-bottom:12px;">
+        <div id="login-avatar-preview" style="width:110px; height:110px; margin:0 auto 8px auto;"></div>
+        <div style="font-size:12px; font-weight:900; color:var(--ms-dark-blue); margin-bottom:6px;">🎨 나만의 픽셀 캐릭터 선택</div>
+        <div class="custom-options-grid" id="login-preset-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:8px;">
+          <button class="opt-chip active" onclick="selectLoginPreset('classic_explorer')">🍁 초보 모험가</button>
+          <button class="opt-chip" onclick="selectLoginPreset('ellinia_fairy')">🧚 요정 마법사</button>
+          <button class="opt-chip" onclick="selectLoginPreset('cute_slime_buddy')">🟢 슬라임 친구</button>
+          <button class="opt-chip" onclick="selectLoginPreset('pink_ribbon_idol')">🎀 리본 아이돌</button>
+          <button class="opt-chip" onclick="selectLoginPreset('kerning_rebel')">🕶️ 스트릿 도적</button>
+          <button class="opt-chip" onclick="selectLoginPreset('perion_champion')">👑 로열 가디언</button>
+        </div>
+        <button class="btn-ms" style="width:100%; font-size:12px; padding:6px; background:#FFFFFF; color:#D46300; border-color:#FF7E00; border-style:dashed;" onclick="openAvatarStudio()">
+          ✨ 아바타 직접 디테일 꾸미기 (드레스룸)
+        </button>
+      </div>
+
+      <button class="btn-ms pixel-font" onclick="loginAndStart()">🍁 모험의 세계로 출발!</button>
+    </div>
+  </div>
+
+  <!-- AVATAR STUDIO MODAL -->
+  <div id="studio-modal" class="modal-overlay" style="display:none;">
+    <div class="studio-modal-box">
+      <div class="studio-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:22px;">🍁</span>
+          <div>
+            <div class="pixel-font" style="font-size:18px; font-weight:900; color:var(--ms-yellow);">메이플 아바타 코디 룸 (AVATAR STUDIO)</div>
+            <div style="font-size:11px; color:#E3F2FD;">원하는 부위를 독립적으로 조합하고 나만의 캐릭터를 만드세요!</div>
+          </div>
+        </div>
+        <button class="btn-ms" style="padding:4px 10px; font-size:12px; background:var(--ms-pink);" onclick="closeAvatarStudio()">✕ 닫기</button>
+      </div>
+
+      <div class="studio-body">
+        <!-- Left Live Preview Col -->
+        <div class="studio-preview-col">
+          <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:8px;">
+            <button class="btn-ms" style="font-size:11px; padding:4px 8px; background:#FFFFFF; color:#000;" onclick="randomizeAvatar()">🎲 랜덤 추천</button>
+            <button class="btn-ms" style="font-size:11px; padding:4px 8px; background:#FFFFFF; color:#D32F2F;" onclick="resetCurrentTabItems()">🔄 탭 초기화</button>
+          </div>
+
+          <div id="studio-avatar-stage" style="width:230px; height:260px; background:linear-gradient(180deg, #81D4FA 0%, #C8E6C9 60%, #81C784 100%); border:3px solid var(--ms-panel-border); border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 10px rgba(0,0,0,0.15); position:relative;">
+            <!-- Render Target -->
+            <div id="studio-avatar-render"></div>
+          </div>
+
+          <!-- Backdrop selector -->
+          <div style="margin:8px 0; font-size:11px; font-weight:bold; display:flex; gap:4px; align-items:center;">
+            <span>배경:</span>
+            <button class="opt-chip active" style="padding:2px 6px;" onclick="setStudioBg('henesys')">헤네시스</button>
+            <button class="opt-chip" style="padding:2px 6px;" onclick="setStudioBg('ellinia')">엘리니아</button>
+            <button class="opt-chip" style="padding:2px 6px;" onclick="setStudioBg('kerning')">커닝시티</button>
+          </div>
+
+          <div style="width:100%; display:flex; gap:8px; margin-top:auto;">
+            <button class="btn-ms" style="flex:1; background:#90A4AE; font-size:12px;" onclick="closeAvatarStudio()">취소</button>
+            <button class="btn-ms pixel-font" style="flex:2; font-size:13px;" onclick="saveAvatarStudio()">💾 내 캐릭터로 저장!</button>
+          </div>
+        </div>
+
+        <!-- Right Controls Col -->
+        <div class="studio-controls-col">
+          <div class="studio-tabs-row" id="studio-tabs-container">
+            <button class="studio-tab-btn active" onclick="switchStudioTab('hair')">💇 헤어</button>
+            <button class="studio-tab-btn" onclick="switchStudioTab('face')">👀 얼굴</button>
+            <button class="studio-tab-btn" onclick="switchStudioTab('outfit')">👕 의상</button>
+            <button class="studio-tab-btn" onclick="switchStudioTab('headwear')">🧢 모자&등</button>
+            <button class="studio-tab-btn" onclick="switchStudioTab('weapons')">🪄 무기&오라</button>
+            <button class="studio-tab-btn" onclick="switchStudioTab('fantasy')">🧝 종족&피부</button>
+          </div>
+
+          <!-- Color Swatch Bar -->
+          <div class="color-picker-bar" id="studio-color-bar">
+            <span style="font-size:11px; font-weight:900; color:var(--ms-orange-dark);">🎨 컬러 스튜디오:</span>
+            <div id="swatches-container" style="display:flex; gap:4px; align-items:center;"></div>
+            <label style="font-size:11px; font-weight:bold; display:flex; align-items:center; gap:2px;">
+              직접: <input type="color" id="custom-color-input" onchange="applyCustomColor(this.value)" style="width:22px; height:22px; cursor:pointer;">
+            </label>
+          </div>
+
+          <div class="studio-items-grid" id="studio-items-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Modal -->
+  <div id="custom-alert-modal" class="modal-overlay" style="display:none;">
+    <div class="ms-modal-box">
+      <h3 id="alert-title" style="font-size:18px; color:var(--ms-dark-blue); font-weight:900;">🔔 알림</h3>
+      <p id="alert-msg" style="font-size:14px; margin:14px 0 20px 0; color:var(--ms-black); line-height:1.5; font-weight:bold;"></p>
+      <button class="btn-ms pixel-font" id="alert-confirm-btn" onclick="closeCustomAlert()">확인 ✨</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="game-logo">
+      <div class="game-logo-icon">🍁</div>
+      <div>
+        <div class="game-title pixel-font">MAPLE WORDS RPG</div>
+        <div style="font-size:11px; color:#E3F2FD; font-weight:bold;">LESSON 6: BUY AND SELL WISELY 🛍️</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="btn-ms pixel-font" style="font-size:12px; padding:4px 10px; background:var(--ms-yellow); color:#000;" onclick="openAvatarStudio()">🎨 아바타 코디룸</button>
+      <button class="btn-ms" id="bgm-toggle-btn" style="padding:4px 10px; font-size:11px;" onclick="RetroBGM.toggle()">🎵 BGM: OFF 🔇</button>
+      <div id="user-display-badge" style="background:rgba(0,0,0,0.3); border:1.5px solid #FFF; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:bold;">
+        👑 용사: 미등록
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-nav-bar">
+    <button class="mobile-tab-btn" onclick="toggleMobileSidebar('left')">📜 퀘스트 목록</button>
+    <button class="mobile-tab-btn" onclick="toggleMobileSidebar('right')">👤 캐릭터 정보</button>
+  </div>
+
+  <!-- 3-Column Persistent Game UI -->
+  <div class="game-container">
+
+    <!-- LEFT SIDEBAR: Quest & Stage Log -->
+    <div class="ms-panel left-sidebar" id="left-sidebar">
+      <div class="ms-panel-header">
+        <span>📜 QUEST LOG</span>
+        <span style="font-size:10px; background:var(--ms-yellow); color:#000; padding:1px 5px; border-radius:3px;">L.06</span>
+      </div>
+      <div id="quest-list-container">
+        <div class="quest-item active" id="qitem-1" onclick="switchStage(1)">
+          <div>
+            <div class="quest-title">1. 단어 도감 보기</div>
+            <div class="quest-star-badge" id="qstar-1"></div>
+          </div>
+          <span class="quest-badge badge-progress" id="qbadge-1">진행중</span>
+        </div>
+        <div class="quest-item" id="qitem-2" onclick="switchStage(2)">
+          <div>
+            <div class="quest-title">2. 뜻 맞추기 퀴즈</div>
+            <div class="quest-star-badge" id="qstar-2"></div>
+          </div>
+          <span class="quest-badge badge-lock" id="qbadge-2">잠김</span>
+        </div>
+        <div class="quest-item" id="qitem-3" onclick="switchStage(3)">
+          <div>
+            <div class="quest-title">3. 카드 짝 찾기</div>
+            <div class="quest-star-badge" id="qstar-3"></div>
+          </div>
+          <span class="quest-badge badge-lock" id="qbadge-3">잠김</span>
+        </div>
+        <div class="quest-item" id="qitem-4" onclick="switchStage(4)">
+          <div>
+            <div class="quest-title">4. 스피드 타자 대결</div>
+            <div class="quest-star-badge" id="qstar-4"></div>
+          </div>
+          <span class="quest-badge badge-lock" id="qbadge-4">잠김</span>
+        </div>
+        <div class="quest-item" id="qitem-5" onclick="switchStage(5)">
+          <div>
+            <div class="quest-title">5. 문장 빈칸 완성</div>
+            <div class="quest-star-badge" id="qstar-5"></div>
+          </div>
+          <span class="quest-badge badge-lock" id="qbadge-5">잠김</span>
+        </div>
+        <div class="quest-item" id="qitem-6" onclick="switchStage(6)">
+          <div>
+            <div class="quest-title">6. 모험 완수 수료증</div>
+            <div class="quest-star-badge" id="qstar-6"></div>
+          </div>
+          <span class="quest-badge badge-lock" id="qbadge-6">잠김</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER MAIN WORKSPACE -->
+    <div class="ms-panel main-workspace">
+      
+      <!-- STAGE 1 -->
+      <div id="stage-1">
+        <div class="npc-dialog-box">
+          <div class="npc-portrait">🧙‍♀️</div>
+          <div>
+            <div style="font-size:12px; font-weight:900; color:var(--ms-orange-dark);">NPC 민경쌤</div>
+            <div style="font-size:13px; font-weight:bold; color:var(--ms-black);">
+              "용사님! 단어 카드를 클릭하여 깊이 있게 학습하세요! (39개 전체 확인 필요)"
+            </div>
+          </div>
+          <div style="margin-left:auto; font-size:13px; font-weight:900; color:var(--ms-orange-dark);">
+            수집: <span id="st1-progress" class="pixel-font" style="font-size:16px;">0</span> / 39
+          </div>
+        </div>
+        <div class="grid-cards" id="flashcard-grid"></div>
+        <button class="btn-ms pixel-font" id="st1-next-btn" style="margin-top:20px; width:100%;" disabled onclick="completeStage1()">🚀 2단계: 뜻 맞추기 퀴즈로 출동!</button>
+      </div>
+
+      <!-- Card Modal Overlay Stage 1 -->
+      <div id="card-overlay" class="modal-overlay" style="display:none;">
+        <div class="ms-modal-box" onclick="event.stopPropagation()">
+          <div id="ov-timer-badge" style="font-size:11px; background:#FFF3E0; color:var(--ms-orange-dark); padding:3px 8px; border-radius:10px; font-weight:bold; display:inline-block; margin-bottom:8px;">⏳ 단어 확인 중... (3초)</div>
+          <button id="ov-close-x" style="position:absolute; top:-10px; right:-10px; background:var(--ms-pink); color:white; border:2px solid #000; border-radius:50%; width:32px; height:32px; font-weight:bold; cursor:pointer; display:none;" onclick="closeCardOverlay()">✖</button>
+          
+          <div style="font-size:11px; font-weight:bold; color:var(--ms-orange);">CARD DETAILS</div>
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px;">
+            <h2 id="ov-word" style="font-size:32px; color:var(--ms-dark-blue); font-weight:900;">Word</h2>
+            <button class="tts-btn" id="ov-tts-word" title="발음 듣기">🔊</button>
+          </div>
+          <div id="ov-pron" style="color:var(--ms-header-blue); font-size:14px; font-weight:bold; margin-bottom:10px;">[발음]</div>
+          <div id="ov-meaning" style="font-size:20px; font-weight:900; color:var(--ms-black); margin-bottom:16px;">뜻</div>
+          
+          <div style="background:#EBF5FB; padding:12px; border:2px solid var(--ms-dark-blue); border-radius:6px; text-align:left; font-size:13px; line-height:1.5; position:relative;">
+            <p id="ov-ex" style="font-weight:bold; color:var(--ms-black); margin-bottom:4px; padding-right:34px;"></p>
+            <button class="tts-btn" id="ov-tts-ex" style="position:absolute; right:8px; top:8px; width:28px; height:28px; font-size:12px;" title="예문 듣기">🔊</button>
+            <p id="ov-ex-kor" style="color:#555; font-size:12px;"></p>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:16px; gap:8px;">
+            <button class="btn-ms" style="background:var(--ms-header-blue); flex:1;" onclick="navigateOverlay(-1)">◀ 이전 단어</button>
+            <button class="btn-ms" style="flex:1;" onclick="navigateOverlay(1)">다음 단어 ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 2 -->
+      <div id="stage-2" style="display:none;">
+        <div class="npc-dialog-box">
+          <div class="npc-portrait">🧙‍♀️</div>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:900; color:var(--ms-orange-dark);">NPC 민경쌤</div>
+            <div style="font-size:13px; font-weight:bold;">"올바른 뜻을 선택하세요! 기회는 3번입니다!"</div>
+          </div>
+          <div>
+            <span id="st2-hearts" style="font-size:16px; color:var(--ms-pink);">❤️❤️❤️</span>
+            <div class="pixel-font" id="st2-timer" style="font-size:12px; font-weight:bold; text-align:right;">⏰ 05:00</div>
+          </div>
+        </div>
+        <div style="text-align:center; margin:18px 0;">
+          <span style="font-size:12px; color:var(--ms-header-blue); font-weight:900;" id="st2-count">⭐ 문항 1/39</span>
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px;">
+            <h2 id="st2-q-word" style="font-size:38px; color:var(--ms-dark-blue); font-weight:900; margin:8px 0;">account</h2>
+            <button class="tts-btn" onclick="speakWord('st2-q-word')">🔊</button>
+          </div>
+        </div>
+        <div class="quiz-options" id="st2-options"></div>
+      </div>
+
+      <!-- STAGE 3 -->
+      <div id="stage-3" style="display:none;">
+        <div class="npc-dialog-box">
+          <div class="npc-portrait">🧙‍♀️</div>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:900; color:var(--ms-orange-dark);">NPC 민경쌤</div>
+            <div style="font-size:13px; font-weight:bold;">"영단어와 뜻 짝을 알맞게 맞추어 보세요!"</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="st3-hearts" style="font-size:16px; color:var(--ms-pink);">❤️❤️❤️</span>
+            <button id="st3-hint-btn" class="btn-ms" style="padding:4px 8px; font-size:11px; background:var(--ms-yellow); color:#000;" onclick="useStage3Hint()">💡 힌트 (4/4)</button>
+          </div>
+        </div>
+        <div style="margin-bottom:10px; font-size:12px; font-weight:bold; color:#555;">
+          📍 라운드 <span id="st3-round-num" class="pixel-font" style="color:var(--ms-orange-dark);">1</span> / 5 (남은 짝: <span id="st3-left" class="pixel-font">8</span>쌍)
+        </div>
+        <div class="match-grid" id="st3-grid"></div>
+      </div>
+
+      <!-- STAGE 4 -->
+      <div id="stage-4" style="display:none;">
+        <div class="npc-dialog-box">
+          <div class="npc-portrait">🤖</div>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:900; color:var(--ms-orange-dark);">AI 라이벌</div>
+            <div style="font-size:13px; font-weight:bold;">"나보다 먼저 39개 스펠링을 완벽하게 입력할 수 있을까?"</div>
+          </div>
+          <span id="st4-hearts" style="font-size:16px; color:var(--ms-pink);">❤️❤️❤️</span>
+        </div>
+
+        <div id="st4-level-select" style="text-align:center; padding:20px 0;">
+          <h3 style="font-size:18px; color:var(--ms-dark-blue); font-weight:900;">🔥 난이도를 선택하세요!</h3>
+          <p style="font-size:13px; color:#555; margin:8px 0 16px 0; font-weight:bold;">AI 라이벌과 39개 단어 속도 대결을 펼칩니다.</p>
+          <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn-ms" style="max-width:180px;" onclick="startStage4('S')">🔥 매운맛 S레벨 (빠름)</button>
+            <button class="btn-ms" style="max-width:180px; background:var(--ms-header-blue);" onclick="startStage4('A')">⚡ 순한맛 A레벨 (보통)</button>
+          </div>
+        </div>
+
+        <div id="st4-game-area" style="display:none;">
+          <div style="background:white; padding:12px; border-radius:8px; border:2px solid #3A516B; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between;">
+              <span>🏃 나: <span id="player-progress-text" class="pixel-font">0/39</span></span>
+            </div>
+            <div style="height:26px; background:#ECEFF1; border-radius:13px; border:2px solid #000; overflow:hidden; position:relative;">
+              <div id="player-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #FF4081, #FFEB3B); transition:width 0.3s;"></div>
+              <div id="player-race-avatar" style="position:absolute; top:-6px; left:0%; width:38px; height:38px; transition:left 0.3s;"></div>
+            </div>
+            
+            <div style="font-size:12px; font-weight:bold; margin:10px 0 4px 0;">🤖 AI: <span id="ai-progress-text" class="pixel-font">0/39</span></div>
+            <div style="height:18px; background:#ECEFF1; border-radius:9px; border:2px solid #000; overflow:hidden;">
+              <div id="ai-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #7C4DFF, #00E5FF); transition:width 0.3s;"></div>
+            </div>
+          </div>
+
+          <div style="text-align:center; padding:16px; background:#EBF5FB; border:2px solid var(--ms-dark-blue); border-radius:8px;">
+            <div style="font-size:13px; color:var(--ms-header-blue); font-weight:bold;" id="st4-target-kor">n. (은행) 계좌</div>
+            <div style="display:flex; justify-content:center; align-items:center; gap:8px;">
+              <h2 id="st4-target-word" style="font-size:32px; color:var(--ms-dark-blue); font-weight:900; margin:4px 0;">account</h2>
+              <button class="tts-btn" onclick="speakWord('st4-target-word')">🔊</button>
+            </div>
+            
+            <div style="display:flex; gap:6px; margin-top:10px; max-width:400px; margin-left:auto; margin-right:auto;">
+              <input type="text" id="st4-input" class="blank-input" placeholder="스펠링 입력..." autocomplete="off">
+              <button class="btn-ms" style="width:auto; padding:0 12px; background:var(--ms-yellow); color:#000;" onclick="showSpellingHint(st4VocabList[st4PlayerProgress].word)">💡</button>
+              <button class="btn-ms" style="width:auto; padding:0 16px;" onclick="checkStage4Submit()">제출</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 5 -->
+      <div id="stage-5" style="display:none;">
+        <div class="npc-dialog-box">
+          <div class="npc-portrait">🧙‍♀️</div>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:900; color:var(--ms-orange-dark);">NPC 민경쌤</div>
+            <div style="font-size:13px; font-weight:bold;">"문장의 빈칸에 들어갈 알맞은 어휘를 완성하세요!"</div>
+          </div>
+          <div>
+            <span id="st5-hearts" style="font-size:16px; color:var(--ms-pink);">❤️❤️❤️</span>
+            <div class="pixel-font" id="st5-timer" style="font-size:12px; font-weight:bold; text-align:right;">⏰ 10:00</div>
+          </div>
+        </div>
+
+        <div style="margin:16px 0;">
+          <div style="font-size:12px; color:var(--ms-header-blue); font-weight:bold;" id="st5-count">⭐ 문항 1/39</div>
+          <p style="font-size:16px; font-weight:900; color:var(--ms-orange-dark); margin:6px 0;" id="st5-kor">뜻: n. (은행) 계좌</p>
+          
+          <div style="background:#EBF5FB; padding:16px; border:2px solid var(--ms-dark-blue); border-radius:6px; position:relative;">
+            <p style="font-size:15px; color:var(--ms-black); font-weight:bold; line-height:1.5; padding-right:36px;" id="st5-ex">Can I withdraw some money from my savings ________?</p>
+            <button class="tts-btn" style="position:absolute; right:8px; top:12px; width:28px; height:28px;" onclick="speakWord('st5-ex')">🔊</button>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:14px; max-width:440px;">
+            <input type="text" id="st5-input" class="blank-input" placeholder="빈칸 단어 입력..." autocomplete="off">
+            <button class="btn-ms" style="width:auto; padding:0 14px; background:var(--ms-yellow); color:#000;" onclick="showSpellingHint(st5VocabList[st5Index].blankTarget || st5VocabList[st5Index].word)">💡 힌트</button>
+            <button class="btn-ms" style="width:auto; padding:0 20px;" onclick="checkStage5()">제출 💖</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 6 -->
+      <div id="stage-6" style="display:none;">
+        <div style="border:4px solid var(--ms-dark-blue); border-radius:8px; background:white; padding:24px 18px; text-align:center;">
+          <h1 class="pixel-font" style="color:var(--ms-orange-dark); font-size:24px;">🏆 ADVENTURE CERTIFICATE 🏆</h1>
+          <p style="color:var(--ms-header-blue); font-size:12px; font-weight:bold; margin-bottom:14px;">✨ 중3 영어 LESSON 6 MASTER ✨</p>
+          
+          <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:14px; background:#EBF5FB; padding:12px; border-radius:8px; border:2px solid #3A516B;">
+            <div id="cert-avatar-frame" style="width:110px; height:110px; background:white; border-radius:50%; border:3px solid #1C2D42; overflow:hidden;"></div>
+            <div style="text-align:left;">
+              <p style="font-size:16px; font-weight:900;" id="cert-user-name">👑 용사: -</p>
+              <p style="font-size:12px; color:var(--ms-orange-dark); font-weight:bold; margin-top:4px;">칭호: [Lesson 6 어휘 마스터]</p>
+            </div>
+          </div>
+
+          <div style="background:#F4F6F7; padding:12px; border:2px solid var(--ms-dark-blue); border-radius:6px; text-align:left; margin-bottom:14px; font-size:12px; line-height:1.6; font-weight:bold;">
+            <p>⏱️ <b>소요 시간:</b> <span id="cert-time">0분 0초</span></p>
+            <p>👀 <b>화면 이탈 횟수:</b> <span id="cert-switches" style="color:var(--ms-pink);">0</span>회</p>
+            <p>⭐ <b>달성 레벨:</b> <span id="cert-level">Lv.1</span></p>
+          </div>
+
+          <div style="text-align:left; background:#FFF0F5; padding:12px; border:2px solid var(--ms-pink); border-radius:6px; margin-bottom:14px;">
+            <p style="font-weight:900; color:var(--ms-pink); margin-bottom:4px; font-size:12px;">📊 오답 분석 기록 노트:</p>
+            <ul id="cert-wrong-list" style="font-size:11px; color:#C62828; padding-left:16px; max-height:100px; overflow-y:auto; font-weight:bold;"></ul>
+          </div>
+
+          <div style="background:#E3F2FD; padding:12px; border:2px dashed var(--ms-header-blue); border-radius:6px; margin-bottom:12px;">
+            <p style="font-size:12px; font-weight:900; color:var(--ms-dark-blue);">🔑 선생님 제출용 결과 코드</p>
+            <div class="pixel-font" id="result-code-display" style="font-size:11px; word-break:break-all; margin:6px 0; background:white; padding:6px; border:1px solid #CCC;">생성중...</div>
+            <button class="btn-ms" style="font-size:12px; padding:6px 14px;" onclick="copyResultCode()">📋 결과 코드 복사하기</button>
+          </div>
+
+          <h3 class="pixel-font" style="color:var(--ms-orange); font-size:16px; margin-top:8px;">"민경쌤은 널 믿었어! Great JOB!" 💖</h3>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR: Character Profile -->
+    <div class="ms-panel right-sidebar" id="right-sidebar">
+      <div class="ms-panel-header">
+        <span>👤 CHARACTER</span>
+        <span class="pixel-font" style="font-size:11px; color:var(--ms-yellow);" id="sidebar-level-text">Lv.1</span>
+      </div>
+      
+      <div class="profile-card">
+        <div class="avatar-display-box" id="sidebar-avatar-render"></div>
+        <div style="font-size:15px; font-weight:900; color:var(--ms-dark-blue);" id="sidebar-user-name">용사님</div>
+        <div style="font-size:11px; color:var(--ms-orange-dark); font-weight:bold; margin-top:2px;" id="sidebar-user-title">[새싹 모험가]</div>
+        
+        <div class="exp-container">
+          <div class="exp-bar" id="exp-bar-inner"></div>
+          <div class="exp-text pixel-font" id="exp-text-display">EXP 0 / 100</div>
+        </div>
+
+        <div style="font-size:11px; color:#555; font-weight:bold; text-align:left; margin-top:6px;">
+          👀 화면 이탈 감지: <span id="sidebar-switch-count" style="color:var(--ms-pink); font-weight:900;">0</span>회
+        </div>
+
+        <button class="btn-ms pixel-font" style="width:100%; margin-top:10px; font-size:12px; padding:8px;" onclick="openAvatarStudio()">
+          👗 아바타 꾸미기 (드레스룸)
+        </button>
+      </div>
+
+      <div style="padding:12px;">
+        <div style="font-size:12px; font-weight:900; color:var(--ms-dark-blue); margin-bottom:6px;">🏆 업적 배지 도감</div>
+        <div class="custom-options-grid" id="badge-display-grid" style="grid-template-columns: repeat(5, 1fr);"></div>
+
+        <div style="margin-top:10px; font-size:11px; font-weight:bold; color:#555;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+            <span>모자:</span><span id="quick-hat-text" style="color:var(--ms-orange-dark);">버섯</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+            <span>상의:</span><span id="quick-top-text" style="color:var(--ms-orange-dark);">메이플티</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>무기:</span><span id="quick-wpn-text" style="color:var(--ms-orange-dark);">완드</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer style="text-align:center; padding:15px; font-size:12px; color:#37474F; font-weight:bold;">
+    🎉 Maple Words RPG // Modular Avatar Creator & Lesson 6 // Curated by 민경쌤 💖
+  </footer>
+
+  <button style="position:fixed; bottom:10px; right:10px; background:white; border:2px solid var(--ms-black); padding:3px 8px; font-size:11px; cursor:pointer; border-radius:3px; font-weight:bold;" onclick="openAdmin()">🔑 교사모드</button>
+
+  <script>
+    /* =========================================================================
+       AUDIO & SPEECH SYNTHESIZER
+       ========================================================================= */
+    const RetroBGM = {
+      audioCtx: null, isPlaying: false, intervalId: null,
+      notes: [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23], step: 0,
+      toggle() { if (this.isPlaying) { this.stop(); } else { this.start(); } },
+      start() {
+        if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        this.isPlaying = true; this.step = 0;
+        this.intervalId = setInterval(() => {
+          if (!this.isPlaying) return;
+          let osc = this.audioCtx.createOscillator(); let gain = this.audioCtx.createGain();
+          osc.type = 'square'; osc.frequency.setValueAtTime(this.notes[this.step % this.notes.length], this.audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.018, this.audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.16);
+          osc.connect(gain); gain.connect(this.audioCtx.destination);
+          osc.start(); osc.stop(this.audioCtx.currentTime + 0.16);
+          this.step++;
+        }, 220);
+        document.getElementById('bgm-toggle-btn').innerText = '🎵 BGM: ON 🔊';
+      },
+      stop() {
+        this.isPlaying = false; clearInterval(this.intervalId);
+        document.getElementById('bgm-toggle-btn').innerText = '🎵 BGM: OFF 🔇';
+      }
+    };
+
+    const AudioFX = {
+      ctx: null,
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+      playCorrect() {
+        this.init();
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+          osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.07);
+          gain.gain.setValueAtTime(0.18, this.ctx.currentTime + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.07 + 0.14);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.07); osc.stop(this.ctx.currentTime + idx * 0.07 + 0.14);
+        });
+      },
+      playWrong() {
+        this.init();
+        [220, 180].forEach((freq, idx) => {
+          let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.12);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.12 + 0.18);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.12); osc.stop(this.ctx.currentTime + idx * 0.12 + 0.18);
+        });
+      },
+      playClick() {
+        this.init();
+        let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(620, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.04);
+      },
+      playFanfare() {
+        this.init();
+        [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+          let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+          osc.type = 'sine'; osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.09);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.09 + 0.28);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.09); osc.stop(this.ctx.currentTime + idx * 0.09 + 0.28);
+        });
+      }
+    };
+
+    function speakText(txt) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(txt.replace(/_+/g, 'blank'));
+        u.lang = 'en-US'; u.rate = 0.85; window.speechSynthesis.speak(u);
+      }
+    }
+    function speakWord(id) {
+      const el = document.getElementById(id);
+      if (el) speakText(el.innerText);
+    }
+    function fireConfetti() {
+      if (typeof confetti === 'function') confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+    }
+
+    /* =========================================================================
+       MODULAR LAYERED SVG AVATAR ENGINE
+       ========================================================================= */
+    const AVATAR_PALETTES = ['#263238', '#4E342E', '#6D4C41', '#FDD835', '#FF7043', '#F48FB1', '#E53935', '#7E57C2', '#1E88E5', '#80CBC4', '#43A047', '#ECEFF1'];
+    const EYE_PALETTES = ['#1976D2', '#388E3C', '#D32F2F', '#FFA000', '#7B1FA2', '#212121', '#5D4037', '#00ACC1'];
+    const SKIN_COLORS = { fair: '#FFE8D6', peach: '#FFDFBA', porcelain: '#FFF3E0', tan: '#E0BB95', chocolate: '#8D6E63', slime_green: '#B2FF59', lilac: '#E1BEE7' };
+
+    function generateAvatarSvg(cfg, options = {}) {
+      const size = options.size || 140;
+      const animClass = options.anim === 'run' ? 'anim-run' : options.anim === 'idle' ? 'anim-idle' : '';
+      const skin = SKIN_COLORS[cfg.skinTone] || '#FFE8D6';
+      const hairColor = cfg.hairColor || '#4E342E';
+      const eyeColor = cfg.eyeColor || '#1976D2';
+      const topColor = cfg.topColor || '#E53935';
+      const bottomColor = cfg.bottomColor || '#1976D2';
+      const hatColor = cfg.hatColor || '#E53935';
+
+      let out = `<svg viewBox="0 0 200 240" width="${size}" height="${size}" class="${animClass}" xmlns="http://www.w3.org/2000/svg" style="image-rendering:crisp-edges; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.15));">`;
+
+      // 1. Cape & Wings Back
+      if (cfg.cape === 'angel_wings') {
+        out += `<path d="M75 135 C40 115 15 80 20 45 C35 55 50 80 58 100 C48 70 65 50 80 65 C85 85 85 115 82 135 Z" fill="#E0F7FA" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<path d="M125 135 C160 115 185 80 180 45 C165 55 150 80 142 100 C152 70 135 50 120 65 C115 85 115 115 118 135 Z" fill="#E0F7FA" stroke="#111827" stroke-width="2.5"/>`;
+      } else if (cfg.cape === 'red_adventurer_cape') {
+        out += `<path d="M68 130 Q50 180 48 200 Q78 190 100 198 Q122 190 152 200 Q150 180 132 130 Z" fill="#C62828" stroke="#111827" stroke-width="2.5"/>`;
+      } else if (cfg.cape === 'demon_wings') {
+        out += `<path d="M75 140 C35 120 10 70 15 40 C35 58 55 65 60 75 C45 60 70 50 82 70 C70 95 78 120 80 140 Z" fill="#263238" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<path d="M125 140 C165 120 190 70 185 40 C165 58 145 65 140 75 C155 60 130 50 118 70 C130 95 122 120 120 140 Z" fill="#263238" stroke="#111827" stroke-width="2.5"/>`;
+      }
+
+      // 2. Rear Hair
+      if (cfg.hairBack === 'long_straight') {
+        out += `<path d="M52 80 C40 120 44 175 48 205 C75 208 125 208 152 205 C156 175 160 120 148 80 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      } else if (cfg.hairBack === 'twin_tails') {
+        out += `<path d="M54 75 C25 80 15 130 22 185 C32 185 45 160 48 135 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+        out += `<circle cx="48" cy="85" r="5" fill="#FF4081" stroke="#111827" stroke-width="2"/>`;
+        out += `<path d="M146 75 C175 80 185 130 178 185 C168 185 155 160 152 135 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+        out += `<circle cx="152" cy="85" r="5" fill="#FF4081" stroke="#111827" stroke-width="2"/>`;
+      } else if (cfg.hairBack === 'high_ponytail') {
+        out += `<path d="M125 55 C160 40 185 90 165 160 C152 160 145 125 138 90 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      } else if (cfg.hairBack === 'bob_cut') {
+        out += `<path d="M48 75 C42 105 45 140 56 150 C75 153 125 153 144 150 C155 140 158 105 152 75 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      } else {
+        out += `<path d="M50 75 C45 95 48 120 54 135 C70 138 130 138 146 135 C152 120 155 95 150 75 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      }
+
+      // 3. Ground Shadow
+      out += `<ellipse cx="100" cy="214" rx="44" ry="10" fill="rgba(17,27,39,0.2)"/>`;
+
+      // 4. Base Body & Limbs
+      out += `<rect x="91" y="112" width="18" height="15" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      out += `<rect x="76" y="165" width="18" height="28" rx="8" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      out += `<rect x="106" y="165" width="18" height="28" rx="8" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      out += `<path d="M72 122 Q100 120 128 122 L124 170 Q100 173 76 170 Z" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      out += `<path d="M74 126 Q58 140 60 160" stroke="${skin}" stroke-width="12" stroke-linecap="round"/>`;
+      out += `<path d="M74 126 Q58 140 60 160" stroke="#111827" stroke-width="2.5" fill="none"/>`;
+      out += `<circle cx="60" cy="160" r="7" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      out += `<path d="M126 126 Q142 140 140 160" stroke="${skin}" stroke-width="12" stroke-linecap="round"/>`;
+      out += `<path d="M126 126 Q142 140 140 160" stroke="#111827" stroke-width="2.5" fill="none"/>`;
+      out += `<circle cx="140" cy="160" r="7" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+
+      // 5. Shoes
+      out += `<path d="M72 186 Q84 180 96 186 L96 202 Q84 205 70 202 Z" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
+      out += `<path d="M104 186 Q116 180 128 186 L130 202 Q116 205 104 202 Z" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
+
+      // 6. Bottoms
+      if (cfg.bottom === 'pleated_skirt') {
+        out += `<path d="M74 150 Q100 148 126 150 L136 176 Q100 182 64 176 Z" fill="${bottomColor}" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<line x1="86" y1="150" x2="82" y2="176" stroke="#000" stroke-width="1.5" opacity="0.3"/>`;
+        out += `<line x1="114" y1="150" x2="118" y2="176" stroke="#000" stroke-width="1.5" opacity="0.3"/>`;
+      } else {
+        out += `<path d="M74 150 Q100 148 126 150 L128 172 L110 172 L100 162 L90 172 L72 172 Z" fill="${bottomColor}" stroke="#111827" stroke-width="2.5"/>`;
+      }
+
+      // 7. Tops
+      if (cfg.top === 'sailor_uniform') {
+        out += `<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Z" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<polygon points="80,122 100,140 120,122 128,124 100,148 72,124" fill="${topColor}" stroke="#111827" stroke-width="2"/>`;
+        out += `<polygon points="96,140 104,140 106,150 100,146 94,150" fill="#E53935" stroke="#111827" stroke-width="1.5"/>`;
+      } else if (cfg.top === 'knight_armor') {
+        out += `<path d="M72 122 L58 136 L68 144 L75 136 L75 152 Q100 155 125 152 L125 136 L132 144 L142 136 L128 122 Z" fill="#CFD8DC" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<circle cx="100" cy="138" r="4.5" fill="#FFD54F" stroke="#111827" stroke-width="1.5"/>`;
+      } else {
+        out += `<path d="M72 122 L60 136 L68 144 L75 136 L75 152 Q100 154 125 152 L125 136 L132 144 L140 136 L128 122 Z" fill="${topColor}" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<polygon points="100,132 102,136 106,136 103,139 104,143 100,141 96,143 97,139 94,136 98,136" fill="#FFD54F"/>`;
+      }
+
+      // 8. Head & Species Ears
+      if (cfg.baseType === 'elf') {
+        out += `<path d="M56 82 Q32 68 28 54 Q44 68 56 74 Z" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<path d="M144 82 Q168 68 172 54 Q156 68 144 74 Z" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      } else if (cfg.baseType === 'cat') {
+        out += `<polygon points="48,50 32,15 68,36" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<polygon points="152,50 168,15 132,36" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      } else {
+        out += `<ellipse cx="53" cy="80" rx="7" ry="9" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<ellipse cx="147" cy="80" rx="7" ry="9" fill="${skin}" stroke="#111827" stroke-width="2.5"/>`;
+      }
+      out += `<path d="M54 74 C50 40 70 32 100 32 C130 32 150 40 146 74 C148 104 128 116 100 116 C72 116 52 104 54 74 Z" fill="${skin}" stroke="#111827" stroke-width="3.2"/>`;
+
+      // 9. Facial Features
+      // Blush
+      if (cfg.blush === 'soft_pink' || cfg.blush === 'heart_blush') {
+        out += `<ellipse cx="72" cy="88" rx="9" ry="5.5" fill="#FF80AB" opacity="0.6"/>`;
+        out += `<ellipse cx="128" cy="88" rx="9" ry="5.5" fill="#FF80AB" opacity="0.6"/>`;
+      }
+      // Eyes
+      if (cfg.eyes === 'wink') {
+        out += `<ellipse cx="80" cy="78" rx="9" ry="12" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<ellipse cx="80" cy="79" rx="6" ry="9" fill="${eyeColor}"/>`;
+        out += `<circle cx="78" cy="76" r="3" fill="#FFF"/>`;
+        out += `<path d="M112 78 Q120 72 128 78" stroke="#111827" stroke-width="3.5" stroke-linecap="round" fill="none"/>`;
+      } else {
+        out += `<ellipse cx="80" cy="78" rx="10" ry="12" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<ellipse cx="120" cy="78" rx="10" ry="12" fill="#FFF" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<ellipse cx="80" cy="79" rx="7" ry="9.5" fill="${eyeColor}"/>`;
+        out += `<ellipse cx="120" cy="79" rx="7" ry="9.5" fill="${eyeColor}"/>`;
+        out += `<circle cx="77" cy="75" r="3.5" fill="#FFF"/><circle cx="117" cy="75" r="3.5" fill="#FFF"/>`;
+        out += `<path d="M70 72 Q80 66 90 71" stroke="#111827" stroke-width="3.2" fill="none"/>`;
+        out += `<path d="M110 71 Q120 66 130 72" stroke="#111827" stroke-width="3.2" fill="none"/>`;
+      }
+      // Eyebrows
+      out += `<path d="M72 65 Q81 60 90 64" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+      out += `<path d="M110 64 Q119 60 128 65" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+      // Mouth
+      if (cfg.expression === 'cat_smile') {
+        out += `<path d="M93 94 Q97 98 100 94 Q103 98 107 94" stroke="#111827" stroke-width="2.5" fill="none"/>`;
+      } else {
+        out += `<path d="M94 94 Q100 101 106 94" stroke="#111827" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+      }
+
+      // 10. Front Hair (Bangs)
+      if (cfg.hairFront === 'bangs_curtain') {
+        out += `<path d="M52 64 C50 38 70 30 100 30 C130 30 150 38 148 64 C144 80 134 82 120 70 C108 85 92 85 80 70 C66 82 56 80 52 64 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      } else if (cfg.hairFront === 'bangs_spiky') {
+        out += `<path d="M52 65 C50 35 70 28 100 28 C130 28 150 35 148 65 L140 60 L132 75 L124 58 L114 77 L102 56 L90 77 L80 58 L70 75 L62 60 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      } else {
+        out += `<path d="M52 64 C50 40 70 30 100 30 C130 30 150 40 148 64 C148 78 140 72 136 68 C130 74 122 72 118 68 C112 74 104 74 100 68 C96 74 88 74 82 68 C78 72 70 74 64 68 C60 72 52 78 52 64 Z" fill="${hairColor}" stroke="#111827" stroke-width="3"/>`;
+      }
+
+      // 11. Face Accessories
+      if (cfg.faceAccessory === 'round_glasses') {
+        out += `<circle cx="80" cy="78" r="11" stroke="#F57F17" stroke-width="2.5" fill="none"/>`;
+        out += `<circle cx="120" cy="78" r="11" stroke="#F57F17" stroke-width="2.5" fill="none"/>`;
+        out += `<line x1="91" y1="78" x2="109" y2="78" stroke="#F57F17" stroke-width="2.5"/>`;
+      }
+
+      // 12. Hat
+      if (cfg.hat === 'mushroom_cap') {
+        out += `<path d="M40 50 C40 10 160 10 160 50 C165 58 150 64 100 64 C50 64 35 58 40 50 Z" fill="${hatColor}" stroke="#111827" stroke-width="3.2"/>`;
+        out += `<circle cx="70" cy="35" r="9" fill="#FFF" stroke="#111827" stroke-width="1.5"/><circle cx="100" cy="24" r="11" fill="#FFF" stroke="#111827" stroke-width="1.5"/><circle cx="130" cy="35" r="9" fill="#FFF" stroke="#111827" stroke-width="1.5"/>`;
+      } else if (cfg.hat === 'pink_ribbon') {
+        out += `<path d="M100 32 C70 12 60 48 100 36 Z" fill="#E91E63" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<path d="M100 32 C130 12 140 48 100 36 Z" fill="#E91E63" stroke="#111827" stroke-width="2.5"/>`;
+        out += `<ellipse cx="100" cy="34" rx="7" ry="6" fill="#FF80AB" stroke="#111827" stroke-width="2"/>`;
+      } else if (cfg.hat === 'golden_crown') {
+        out += `<polygon points="68,44 64,22 80,32 100,16 120,32 136,22 132,44" fill="#FFD54F" stroke="#111827" stroke-width="2.8"/>`;
+      }
+
+      // 13. Weapon
+      if (cfg.weapon === 'wooden_wand') {
+        out += `<line x1="135" y1="165" x2="168" y2="120" stroke="#8D6E63" stroke-width="4.5" stroke-linecap="round"/>`;
+        out += `<circle cx="168" cy="120" r="7.5" fill="#FFEB3B" stroke="#111827" stroke-width="2"/>`;
+      } else if (cfg.weapon === 'beginner_dagger') {
+        out += `<polygon points="144,142 165,115 154,140" fill="#CFD8DC" stroke="#111827" stroke-width="2"/>`;
+      } else if (cfg.weapon === 'rainbow_balloon') {
+        out += `<path d="M140 160 Q155 130 160 85" stroke="#111827" stroke-width="1.5" fill="none"/>`;
+        out += `<g transform="translate(160, 65) scale(0.9)"><path d="M0 0 C-18 -18 -32 6 0 35 C32 6 18 -18 0 0 Z" fill="#FF4081" stroke="#111827" stroke-width="2.5"/></g>`;
+      }
+
+      // 14. Effect
+      if (cfg.effect === 'sparkles') {
+        out += `<polygon points="40,90 42,94 46,94 43,97 44,101 40,99 36,101 37,97 34,94 38,94" fill="#FFD54F"/>`;
+        out += `<polygon points="165,95 167,99 171,99 168,102 169,106 165,104 161,106 162,102 159,99 163,99" fill="#FFD54F"/>`;
+      }
+
+      out += `</svg>`;
+      return out;
+    }
+
+    /* =========================================================================
+       GAME VOCABULARY & STATE
+       ========================================================================= */
+    const vocabData = [
+      { id:1, word:"account", pron:"어카운트", meaning:"n. (은행) 계좌", ex:"Can I withdraw some money from my savings account?", blankTarget:"account", exKor:"제 예금 계좌에서 돈을 좀 인출할 수 있나요?" },
+      { id:2, word:"suddenly", pron:"서든리", meaning:"adv. 갑자기", ex:"The tree in my yard suddenly fell down.", blankTarget:"suddenly", exKor:"우리 집 마당에 있던 나무가 갑자기 쓰러졌다." },
+      { id:3, word:"sell", pron:"셀", meaning:"v. 팔다, 판매하다", ex:"He's thinking of selling his bicycle and buying a new one.", blankTarget:"selling", exKor:"그는 자신의 자전거를 팔고 새것을 사려고 생각하고 있다." },
+      { id:4, word:"add", pron:"애드", meaning:"v. 더하다, 추가하다", ex:"I always add tomatoes when eating a hamburger.", blankTarget:"add", exKor:"나는 햄버거를 먹을 때 항상 토마토를 추가한다." },
+      { id:5, word:"act", pron:"액트", meaning:"v. 행동하다", ex:"Stop acting like a child.", blankTarget:"acting", exKor:"어린아이처럼 행동하지 마라." },
+      { id:6, word:"post", pron:"포스트", meaning:"v. 게시하다, 올리다", ex:"Did you remember to post the notice on the school board?", blankTarget:"post", exKor:"학교 게시판에 공고문을 게시해야 하는 것을 기억했니?" },
+      { id:7, word:"comment", pron:"코멘트", meaning:"n. 설명, 언급, 논평", ex:"Her kind comment was helpful to my understanding the story.", blankTarget:"comment", exKor:"그녀의 친절한 설명은 내가 그 이야기를 이해하는 데 도움이 되었다." },
+      { id:8, word:"shiny", pron:"샤이니", meaning:"adj. 빛나는, 반짝거리는", ex:"My dad is wearing shiny new shoes.", blankTarget:"shiny", exKor:"우리 아빠는 빛나는 새 구두를 신고 계신다." },
+      { id:9, word:"advertisement", pron:"애드버타이즈먼트", meaning:"n. 광고", ex:"They're putting an advertisement in major newspapers.", blankTarget:"advertisement", exKor:"그들은 주요 신문들에 광고를 실을 것이다." },
+      { id:10, word:"expectation", pron:"익스펙테이션", meaning:"n. 기대", ex:"The show was much better than my expectations.", blankTarget:"expectations", exKor:"그 공연은 내 기대 이상이었다." },
+      { id:11, word:"sink", pron:"싱크", meaning:"v. 가라앉다, (마음이) 내려앉다", ex:"My paper boat sank into the muddy water.", blankTarget:"sank", exKor:"내 종이배가 흙탕물에 가라앉았다." },
+      { id:12, word:"attractive", pron:"어트랙티브", meaning:"adj. 매력적인", ex:"That park is an attractive place for a picnic.", blankTarget:"attractive", exKor:"그 공원은 소풍 가기에 매력적인 장소이다." },
+      { id:13, word:"search", pron:"서치", meaning:"v. 찾다, 검색하다", ex:"To search for information, most people use the Internet.", blankTarget:"search", exKor:"정보를 검색하기 위해 대부분의 사람들은 인터넷을 사용한다." },
+      { id:14, word:"hasty", pron:"헤이스티", meaning:"adj. 성급한", ex:"She soon regretted her hasty decision.", blankTarget:"hasty", exKor:"그녀는 곧 자신의 성급한 결정을 후회했다." },
+      { id:15, word:"greedy", pron:"그리디", meaning:"adj. 욕심 많은", ex:"Tony was an ambitious and greedy boy.", blankTarget:"greedy", exKor:"토니는 야망 있고 욕심 많은 소년이었다." },
+      { id:16, word:"description", pron:"디스크립션", meaning:"n. 묘사, 설명", ex:"Her description of the island was very detailed.", blankTarget:"description", exKor:"섬에 대한 그녀의 묘사는 매우 상세했다." },
+      { id:17, word:"angle", pron:"앵글", meaning:"n. 각도", ex:"He took pictures at different angles.", blankTarget:"angles", exKor:"그는 다른 각도에서 사진을 찍었다." },
+      { id:18, word:"scratch", pron:"스크래치", meaning:"n. 긁힌 자국, 스크래치", ex:"I found some scratches on my laptop.", blankTarget:"scratches", exKor:"나는 노트북에 긁힌 자국이 몇 개 있는 것을 발견했다." },
+      { id:19, word:"ask for", pron:"아스크 포", meaning:"~을 요청하다", ex:"I asked for extra blankets.", blankTarget:"asked for", exKor:"나는 담요를 몇 장 더 요청했다." },
+      { id:20, word:"accept", pron:"악셉트", meaning:"v. 받아들이다", ex:"Andy accepted my apology.", blankTarget:"accepted", exKor:"앤디는 내 사과를 받아들였다." },
+      { id:21, word:"hand over", pron:"핸드 오버", meaning:"건네주다", ex:"The mail carrier handed over a package.", blankTarget:"handed over", exKor:"우편배달부가 소포를 건네주었다." },
+      { id:22, word:"grow up", pron:"그로우 업", meaning:"성장하다, 자라다", ex:"Children should eat various vegetables to grow up well.", blankTarget:"grow up", exKor:"아이들은 잘 자라기 위해 다양한 채소를 먹어야 한다." },
+      { id:23, word:"through", pron:"쓰루", meaning:"prep. ~을 통해", ex:"He's looking at the rainbow through the window.", blankTarget:"through", exKor:"그는 창문을 통해 무지개를 보고 있다." },
+      { id:24, word:"experience", pron:"익스피리언스", meaning:"n. 경험", ex:"Doing volunteer work was a very meaningful experience for me.", blankTarget:"experience", exKor:"봉사활동은 나에게 매우 의미 있는 경험이었다." },
+      { id:25, word:"ahead", pron:"어헤드", meaning:"prep./adv. 앞으로", ex:"Look ahead when you walk across the street.", blankTarget:"ahead", exKor:"길을 건널 때는 앞을 보세요." },
+      { id:26, word:"category", pron:"카테고리", meaning:"n. 범주, 부류", ex:"Books are arranged by category in the library.", blankTarget:"category", exKor:"도서관의 책들은 범주별로 정렬되어 있다." },
+      { id:27, word:"contact", pron:"콘택트", meaning:"n. 연락, 접촉", ex:"I lost contact with her.", blankTarget:"contact", exKor:"나는 그녀와 연락이 끊겼다." },
+      { id:28, word:"deliver", pron:"디리버", meaning:"v. 배달하다", ex:"They deliver fresh milk every morning.", blankTarget:"deliver", exKor:"그들은 매일 아침 신선한 우유를 배달한다." },
+      { id:29, word:"dig", pron:"디그", meaning:"v. (땅을) 파다, 캐다", ex:"Dogs like to dig holes in the garden.", blankTarget:"dig", exKor:"개들은 정원에 구덩이를 파는 것을 좋아한다." },
+      { id:30, word:"excellent", pron:"엑설런트", meaning:"adj. 훌륭한; (상품 상태가) 매우 좋은", ex:"Used bike in excellent condition.", blankTarget:"excellent", exKor:"상태가 매우 좋은 중고 자전거입니다." },
+      { id:31, word:"excuse", pron:"익스큐즈", meaning:"v. 용서하다, n. 실례", ex:"Excuse me, I want to return these sneakers.", blankTarget:"Excuse", exKor:"실례합니다. 이 운동화를 반품하고 싶어요." },
+      { id:32, word:"lend", pron:"랜드", meaning:"v. 빌려주다", ex:"Can you lend it to me?", blankTarget:"lend", exKor:"그것을 나에게 빌려줄 수 있나요?" },
+      { id:33, word:"mix", pron:"믹스", meaning:"v. 섞다", ex:"Mix the flour and water together.", blankTarget:"Mix", exKor:"밀가루와 물을 함께 섞으세요." },
+      { id:34, word:"normally", pron:"노멀리", meaning:"adv. 보통", ex:"Normally, the shop opens at nine o'clock.", blankTarget:"Normally", exKor:"보통 그 가게는 9시에 문을 연다." },
+      { id:35, word:"recommend", pron:"레코멘드", meaning:"v. 추천하다", ex:"You should check used bookstores online.", blankTarget:"check", exKor:"온라인 중고 서점을 확인해 보는 게 좋겠어요." },
+      { id:36, word:"sale", pron:"세일", meaning:"n. 판매; 할인 판매", ex:"Seyun's First Online Sale", blankTarget:"Sale", exKor:"세윤의 첫 온라인 판매" },
+      { id:37, word:"shut", pron:"셔트", meaning:"v. 닫다", ex:"Do you mind if I shut the blinds?", blankTarget:"shut", exKor:"블라인드를 내려도 될까요?" },
+      { id:38, word:"steal", pron:"스틸", meaning:"v. 훔치다", ex:"It is wrong to steal other people's money.", blankTarget:"steal", exKor:"다른 사람의 돈을 훔치는 것은 잘못된 일이다." },
+      { id:39, word:"ugly", pron:"어글리", meaning:"adj. 못생긴", ex:"The ugly duckling became a beautiful swan.", blankTarget:"ugly", exKor:"못생긴 아기 오리는 아름다운 백조가 되었다." }
+    ];
+
+    const badgeData = [
+      { id: 'b1', icon: '🐣', name: '첫걸음', desc: '1단계 도감 수집 완수' },
+      { id: 'b2', icon: '🔥', name: '연속 정답왕', desc: '5연속 정답 FEVER 달성' },
+      { id: 'b3', icon: '⚡', name: '스피드 레이서', desc: '4단계 AI 대결 승리' },
+      { id: 'b4', icon: '🛡️', name: '하트 수호자', desc: '하트 차감 없이 클리어' },
+      { id: 'b5', icon: '👑', name: '메이플 마스터', desc: '6단계 수료증 발급' }
+    ];
+
+    const avatarPresets = {
+      classic_explorer: { skinTone: 'fair', baseType: 'human', eyes: 'sparkle', eyeColor: '#1976D2', hairFront: 'bangs_spiky', hairBack: 'short_neat', hairColor: '#4E342E', top: 'maple_tee', topColor: '#E53935', bottom: 'denim_shorts', bottomColor: '#1976D2', hat: 'mushroom_cap', hatColor: '#E53935', cape: 'red_adventurer_cape', weapon: 'wooden_wand', effect: 'sparkles' },
+      ellinia_fairy: { skinTone: 'porcelain', baseType: 'elf', eyes: 'sparkle', eyeColor: '#7B1FA2', hairFront: 'bangs_curtain', hairBack: 'long_straight', hairColor: '#7E57C2', top: 'sailor_uniform', topColor: '#5C6BC0', bottom: 'pleated_skirt', bottomColor: '#3949AB', hat: 'none', cape: 'angel_wings', weapon: 'wooden_wand', effect: 'sparkles' },
+      cute_slime_buddy: { skinTone: 'slime_green', baseType: 'human', eyes: 'sparkle', eyeColor: '#388E3C', hairFront: 'bangs_straight', hairBack: 'bob_cut', hairColor: '#80CBC4', top: 'maple_tee', topColor: '#4CAF50', bottom: 'denim_shorts', bottomColor: '#2E7D32', hat: 'none', cape: 'none', weapon: 'rainbow_balloon', effect: 'sparkles' },
+      pink_ribbon_idol: { skinTone: 'peach', baseType: 'human', eyes: 'wink', eyeColor: '#E53935', hairFront: 'bangs_curtain', hairBack: 'twin_tails', hairColor: '#F48FB1', top: 'sailor_uniform', topColor: '#F06292', bottom: 'pleated_skirt', bottomColor: '#E91E63', hat: 'pink_ribbon', hatColor: '#E91E63', cape: 'angel_wings', weapon: 'rainbow_balloon', effect: 'sparkles' },
+      kerning_rebel: { skinTone: 'tan', baseType: 'cat', eyes: 'sparkle', eyeColor: '#FFA000', hairFront: 'bangs_spiky', hairBack: 'short_neat', hairColor: '#263238', top: 'knight_armor', topColor: '#37474F', bottom: 'denim_shorts', bottomColor: '#263238', hat: 'none', cape: 'demon_wings', weapon: 'beginner_dagger', effect: 'none' },
+      perion_champion: { skinTone: 'fair', baseType: 'human', eyes: 'sparkle', eyeColor: '#1976D2', hairFront: 'bangs_straight', hairBack: 'high_ponytail', hairColor: '#FDD835', top: 'knight_armor', topColor: '#ECEFF1', bottom: 'denim_shorts', bottomColor: '#455A64', hat: 'golden_crown', hatColor: '#FFD700', cape: 'red_adventurer_cape', weapon: 'beginner_dagger', effect: 'sparkles' }
+    };
+
+    let state = {
+      userId: '',
+      userName: '',
+      unlockedStage: 1,
+      currentStage: 1,
+      switchCount: 0,
+      startTime: Date.now(),
+      st1Clicked: [],
+      wrongCounts: {},
+      selectedLevel: 'S',
+      level: 1,
+      exp: 0,
+      avatar: { ...avatarPresets.classic_explorer },
+      stageStars: { 1:0, 2:0, 3:0, 4:0, 5:0 },
+      badges: { b1: false, b2: false, b3: false, b4: false, b5: false }
+    };
+
+    let studioDraft = { ...state.avatar };
+    let currentStudioTab = 'hair';
+    let currentStudioSub = 'hairFront';
+    let comboCount = 0;
+    let timers = { st2: null, st4: null, st5: null, aiInterval: null };
+
+    window.onload = () => {
+      const lastUser = localStorage.getItem('ms_vocab_last_user');
+      if (lastUser) {
+        const saved = localStorage.getItem(`ms_vocab_app_${lastUser}`);
+        if (saved) {
+          try {
+            state = JSON.parse(saved);
+            if (!state.avatar) state.avatar = { ...avatarPresets.classic_explorer };
+            document.getElementById('login-modal').style.display = 'none';
+            updateAllUi();
+            switchStage(state.currentStage || 1);
+            return;
+          } catch(e) {}
+        }
+      }
+      renderLoginAvatarPreview();
+    };
+
+    function saveState() {
+      if (state.userId) {
+        localStorage.setItem(`ms_vocab_app_${state.userId}`, JSON.stringify(state));
+        localStorage.setItem('ms_vocab_last_user', state.userId);
+      }
+    }
+
+    function updateAllUi() {
+      document.getElementById('user-display-badge').innerText = `👑 용사: ${state.userId} ${state.userName}`;
+      document.getElementById('sidebar-user-name').innerText = state.userName || '용사님';
+      document.getElementById('sidebar-level-text').innerText = `Lv.${state.level}`;
+      document.getElementById('sidebar-switch-count').innerText = state.switchCount || 0;
+      document.getElementById('exp-bar-inner').style.width = `${state.exp}%`;
+      document.getElementById('exp-text-display').innerText = `EXP ${state.exp} / 100`;
+
+      // Quick info
+      document.getElementById('quick-hat-text').innerText = state.avatar.hat || '없음';
+      document.getElementById('quick-top-text').innerText = state.avatar.top || '기본';
+      document.getElementById('quick-wpn-text').innerText = state.avatar.weapon || '맨손';
+
+      // Sidebar avatar
+      document.getElementById('sidebar-avatar-render').innerHTML = generateAvatarSvg(state.avatar, { size: 125, anim: 'idle' });
+
+      renderQuestNav();
+      renderBadgesUI();
+    }
+
+    function renderQuestNav() {
+      for (let i = 1; i <= 6; i++) {
+        const item = document.getElementById(`qitem-${i}`);
+        const badge = document.getElementById(`qbadge-${i}`);
+        const starEl = document.getElementById(`qstar-${i}`);
+        if (!item || !badge) continue;
+
+        if (i <= state.unlockedStage) {
+          item.classList.add('unlocked');
+          badge.className = i < state.unlockedStage ? 'quest-badge badge-clear' : 'quest-badge badge-progress';
+          badge.innerText = i < state.unlockedStage ? '완료' : '진행중';
+        } else {
+          item.classList.remove('unlocked');
+          badge.className = 'quest-badge badge-lock';
+          badge.innerText = '잠김';
+        }
+        if (starEl) {
+          const s = state.stageStars[i] || 0;
+          starEl.innerText = s > 0 ? '⭐'.repeat(s) : '';
+        }
+      }
+    }
+
+    function renderBadgesUI() {
+      const c = document.getElementById('badge-display-grid');
+      if (!c) return;
+      c.innerHTML = '';
+      badgeData.forEach(b => {
+        const isUnlocked = state.badges && state.badges[b.id];
+        const btn = document.createElement('div');
+        btn.className = `opt-chip ${isUnlocked ? 'active' : 'locked'}`;
+        btn.innerText = b.icon;
+        btn.title = `${b.name}: ${b.desc}`;
+        btn.onclick = () => showAlert(`${b.icon} [${b.name}]\n설명: ${b.desc}\n상태: ${isUnlocked ? '달성 완료 ✨' : '미달성 🔒'}`);
+        c.appendChild(btn);
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg; t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 2500);
+    }
+
+    function addExp(amount) {
+      state.exp += amount;
+      if (state.exp >= 100) {
+        state.level += 1; state.exp -= 100;
+        AudioFX.playFanfare(); fireConfetti();
+        showToast(`🎉 LEVEL UP! Lv.${state.level}에 도달했습니다! 새로운 아이템 해금! ✨`);
+      }
+      saveState(); updateAllUi();
+    }
+
+    function unlockBadge(bId) {
+      if (!state.badges) state.badges = {};
+      if (!state.badges[bId]) {
+        state.badges[bId] = true;
+        const b = badgeData.find(item => item.id === bId);
+        if (b) { showToast(`🏆 업적 달성! [${b.name}] 배지를 획득했습니다! ✨`); addExp(15); }
+        saveState(); renderBadgesUI();
+      }
+    }
+
+    function switchStage(stageNum) {
+      if (stageNum > state.unlockedStage) {
+        return showAlert('🚫 다음 단계를 진행하려면 현재 단계를 클리어해야 합니다! 🔒');
+      }
+      AudioFX.playClick();
+      clearInterval(timers.st2); clearInterval(timers.st4); clearInterval(timers.st5); clearInterval(timers.aiInterval);
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById(`stage-${i}`).style.display = 'none';
+        document.getElementById(`qitem-${i}`).classList.remove('active');
+      }
+      state.currentStage = stageNum; saveState();
+      document.getElementById(`stage-${stageNum}`).style.display = 'block';
+      document.getElementById(`qitem-${stageNum}`).classList.add('active');
+
+      if (stageNum === 1) initStage1();
+      else if (stageNum === 2) initStage2();
+      else if (stageNum === 3) initStage3();
+      else if (stageNum === 4) initStage4();
+      else if (stageNum === 5) initStage5();
+      else if (stageNum === 6) renderCertificate();
+    }
+
+    let pendingNextStage = null;
+    function triggerStageClear(stageNum, hearts) {
+      let stars = hearts >= 3 ? 3 : hearts === 2 ? 2 : 1;
+      state.stageStars[stageNum] = Math.max(state.stageStars[stageNum] || 0, stars);
+      if (stageNum === 1) unlockBadge('b1');
+      if (stageNum === 4) unlockBadge('b3');
+      if (hearts === 3 && stageNum >= 2 && stageNum <= 5) unlockBadge('b4');
+
+      AudioFX.playFanfare(); fireConfetti();
+      document.getElementById('clear-star-display').innerText = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+      document.getElementById('clear-modal-msg').innerText = `🎉 Stage ${stageNum} 완수 성공!\n다음 퀘스트가 열렸습니다!`;
+      pendingNextStage = stageNum + 1;
+      if (pendingNextStage > state.unlockedStage) state.unlockedStage = pendingNextStage;
+      saveState(); renderQuestNav();
+      document.getElementById('clear-modal').style.display = 'flex';
+    }
+
+    function closeClearModal() {
+      document.getElementById('clear-modal').style.display = 'none';
+      if (pendingNextStage && pendingNextStage <= 6) {
+        switchStage(pendingNextStage); pendingNextStage = null;
+      }
+    }
+
+    /* =========================================================================
+       AVATAR STUDIO MODAL LOGIC
+       ========================================================================= */
+    function openAvatarStudio() {
+      AudioFX.playClick();
+      studioDraft = { ...state.avatar };
+      document.getElementById('studio-modal').style.display = 'flex';
+      renderStudioPreview();
+      renderStudioTabs();
+      renderStudioColorBar();
+      renderStudioItems();
+    }
+
+    function closeAvatarStudio() {
+      document.getElementById('studio-modal').style.display = 'none';
+    }
+
+    function saveAvatarStudio() {
+      AudioFX.playFanfare();
+      state.avatar = { ...studioDraft };
+      saveState(); updateAllUi();
+      closeAvatarStudio();
+      showToast('✨ 아바타 코디가 저장되었습니다! 🍁');
+    }
+
+    function renderStudioPreview() {
+      const target = document.getElementById('studio-avatar-render');
+      if (target) target.innerHTML = generateAvatarSvg(studioDraft, { size: 210, anim: 'idle' });
+    }
+
+    function switchStudioTab(tab) {
+      AudioFX.playClick();
+      currentStudioTab = tab;
+      document.querySelectorAll('#studio-tabs-container .studio-tab-btn').forEach((btn, idx) => {
+        const tabs = ['hair', 'face', 'outfit', 'headwear', 'weapons', 'fantasy'];
+        if (tabs[idx] === tab) btn.classList.add('active'); else btn.classList.remove('active');
+      });
+      renderStudioColorBar();
+      renderStudioItems();
+    }
+
+    function renderStudioColorBar() {
+      const swatchesDiv = document.getElementById('swatches-container');
+      swatchesDiv.innerHTML = '';
+      const palettes = currentStudioTab === 'face' ? EYE_PALETTES : AVATAR_PALETTES;
+      palettes.forEach(c => {
+        const span = document.createElement('span');
+        span.className = 'color-swatch-circle';
+        span.style.backgroundColor = c;
+        span.onclick = () => applyStudioColor(c);
+        swatchesDiv.appendChild(span);
+      });
+    }
+
+    function applyStudioColor(c) {
+      AudioFX.playClick();
+      if (currentStudioTab === 'hair') studioDraft.hairColor = c;
+      else if (currentStudioTab === 'face') studioDraft.eyeColor = c;
+      else if (currentStudioTab === 'outfit') studioDraft.topColor = c;
+      else if (currentStudioTab === 'headwear') studioDraft.hatColor = c;
+      renderStudioPreview();
+    }
+    function applyCustomColor(c) { applyStudioColor(c); }
+
+    function renderStudioItems() {
+      const container = document.getElementById('studio-items-container');
+      container.innerHTML = '';
+
+      let items = [];
+      if (currentStudioTab === 'hair') {
+        items = [
+          { type: 'hairFront', val: 'bangs_straight', label: '일자뱅', icon: '💇' },
+          { type: 'hairFront', val: 'bangs_curtain', label: '커튼뱅', icon: '✂️' },
+          { type: 'hairFront', val: 'bangs_spiky', label: '스파이키', icon: '⚡' },
+          { type: 'hairBack', val: 'short_neat', label: '숏컷', icon: '👦' },
+          { type: 'hairBack', val: 'long_straight', label: '긴생머리', icon: '👩' },
+          { type: 'hairBack', val: 'twin_tails', label: '트윈테일', icon: '👧' },
+          { type: 'hairBack', val: 'high_ponytail', label: '포니테일', icon: '👱‍♀️' },
+          { type: 'hairBack', val: 'bob_cut', label: '단발보브', icon: '💇' }
+        ];
+      } else if (currentStudioTab === 'face') {
+        items = [
+          { type: 'eyes', val: 'sparkle', label: '순정눈', icon: '✨' },
+          { type: 'eyes', val: 'wink', label: '윙크눈', icon: '😉' },
+          { type: 'expression', val: 'happy', label: '활짝미소', icon: '😄' },
+          { type: 'expression', val: 'cat_smile', label: '고양이입', icon: '😺' },
+          { type: 'blush', val: 'soft_pink', label: '볼터치', icon: '🌸' },
+          { type: 'blush', val: 'none', label: '볼터치없음', icon: '❌' }
+        ];
+      } else if (currentStudioTab === 'outfit') {
+        items = [
+          { type: 'top', val: 'maple_tee', label: '단풍티', icon: '👕' },
+          { type: 'top', val: 'sailor_uniform', label: '세일러교복', icon: '👔' },
+          { type: 'top', val: 'knight_armor', label: '기사갑옷', icon: '🛡️', reqLv: 2 },
+          { type: 'bottom', val: 'denim_shorts', label: '청반바지', icon: '🩳' },
+          { type: 'bottom', val: 'pleated_skirt', label: '주름치마', icon: '👗' }
+        ];
+      } else if (currentStudioTab === 'headwear') {
+        items = [
+          { type: 'hat', val: 'mushroom_cap', label: '버섯모자', icon: '🍄' },
+          { type: 'hat', val: 'pink_ribbon', label: '핑크리본', icon: '🎀', reqLv: 2 },
+          { type: 'hat', val: 'golden_crown', label: '황금왕관', icon: '👑', reqLv: 3 },
+          { type: 'hat', val: 'none', label: '모자없음', icon: '❌' },
+          { type: 'cape', val: 'angel_wings', label: '천사날개', icon: '🪽', reqLv: 2 },
+          { type: 'cape', val: 'red_adventurer_cape', label: '빨간망토', icon: '🧣' },
+          { type: 'cape', val: 'demon_wings', label: '악마날개', icon: '🦇', reqLv: 3 },
+          { type: 'cape', val: 'none', label: '망토없음', icon: '❌' },
+          { type: 'faceAccessory', val: 'round_glasses', label: '동글안경', icon: '👓' },
+          { type: 'faceAccessory', val: 'none', label: '안경없음', icon: '❌' }
+        ];
+      } else if (currentStudioTab === 'weapons') {
+        items = [
+          { type: 'weapon', val: 'wooden_wand', label: '나무완드', icon: '🪄' },
+          { type: 'weapon', val: 'beginner_dagger', label: '단검', icon: '🗡️', reqLv: 2 },
+          { type: 'weapon', val: 'rainbow_balloon', label: '하트풍선', icon: '🎈', reqLv: 2 },
+          { type: 'weapon', val: 'none', label: '맨손', icon: '✊' },
+          { type: 'effect', val: 'sparkles', label: '반짝이', icon: '✨' },
+          { type: 'effect', val: 'none', label: '효과없음', icon: '❌' }
+        ];
+      } else if (currentStudioTab === 'fantasy') {
+        items = [
+          { type: 'skinTone', val: 'fair', label: '살구피부', icon: '🧑' },
+          { type: 'skinTone', val: 'porcelain', label: '백옥피부', icon: '⚪' },
+          { type: 'skinTone', val: 'tan', label: '태닝피부', icon: '🏽' },
+          { type: 'skinTone', val: 'slime_green', label: '슬라임민트', icon: '🟢' },
+          { type: 'baseType', val: 'human', label: '인간', icon: '🧑' },
+          { type: 'baseType', val: 'elf', label: '엘프귀', icon: '🧝' },
+          { type: 'baseType', val: 'cat', label: '고양이', icon: '🐱' }
+        ];
+      }
+
+      items.forEach(it => {
+        const isLocked = it.reqLv && state.level < it.reqLv;
+        const isActive = studioDraft[it.type] === it.val;
+        const card = document.createElement('div');
+        card.className = `studio-item-card ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
+        card.innerHTML = `
+          <div style="font-size:20px;">${it.icon}</div>
+          <div style="font-size:11px; font-weight:bold; margin-top:2px;">${it.label}</div>
+          ${it.reqLv ? `<div style="font-size:9px; color:${isLocked?'#D32F2F':'#388E3C'};">Lv.${it.reqLv}</div>` : ''}
+        `;
+        card.onclick = () => {
+          if (isLocked) return showAlert(`🔒 Lv.${it.reqLv} 이상 달성 시 해금되는 아이템입니다!`);
+          AudioFX.playClick();
+          studioDraft[it.type] = it.val;
+          renderStudioPreview();
+          renderStudioItems();
+        };
+        container.appendChild(card);
+      });
+    }
+
+    function randomizeAvatar() {
+      AudioFX.playFanfare();
+      const keys = Object.keys(avatarPresets);
+      const randKey = keys[Math.floor(Math.random() * keys.length)];
+      studioDraft = { ...avatarPresets[randKey] };
+      renderStudioPreview(); renderStudioItems();
+      showToast('🎲 랜덤 추천 프리셋 코디 적용!');
+    }
+
+    function resetCurrentTabItems() {
+      AudioFX.playClick();
+      if (currentStudioTab === 'hair') { studioDraft.hairFront = 'bangs_straight'; studioDraft.hairBack = 'short_neat'; }
+      else if (currentStudioTab === 'face') { studioDraft.eyes = 'sparkle'; studioDraft.expression = 'happy'; }
+      else if (currentStudioTab === 'outfit') { studioDraft.top = 'maple_tee'; studioDraft.bottom = 'denim_shorts'; }
+      else if (currentStudioTab === 'headwear') { studioDraft.hat = 'none'; studioDraft.cape = 'none'; }
+      renderStudioPreview(); renderStudioItems();
+    }
+
+    function setStudioBg(theme) {
+      const stage = document.getElementById('studio-avatar-stage');
+      if (theme === 'henesys') stage.style.background = 'linear-gradient(180deg, #81D4FA 0%, #C8E6C9 60%, #81C784 100%)';
+      else if (theme === 'ellinia') stage.style.background = 'linear-gradient(180deg, #5C6BC0 0%, #7E57C2 60%, #2E7D32 100%)';
+      else if (theme === 'kerning') stage.style.background = 'linear-gradient(180deg, #263238 0%, #37474F 60%, #1A237E 100%)';
+    }
+
+    function renderLoginAvatarPreview() {
+      const box = document.getElementById('login-avatar-preview');
+      if (box) box.innerHTML = generateAvatarSvg(state.avatar, { size: 105, anim: 'idle' });
+    }
+
+    function selectLoginPreset(key) {
+      AudioFX.playClick();
+      if (avatarPresets[key]) state.avatar = { ...avatarPresets[key] };
+      document.querySelectorAll('#login-preset-grid .opt-chip').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      renderLoginAvatarPreview();
+    }
+
+    function loginAndStart() {
+      const id = document.getElementById('input-id').value.trim();
+      const name = document.getElementById('input-name').value.trim();
+      if (!id || !name) return showAlert('학번과 이름을 모두 입력해주세요! 💖');
+      AudioFX.playFanfare();
+      state.userId = id; state.userName = name; state.startTime = Date.now();
+      saveState();
+      document.getElementById('login-modal').style.display = 'none';
+      updateAllUi();
+      initStage1();
+    }
+
+    /* =========================================================================
+       STAGE 1: CODEX
+       ========================================================================= */
+    let overlayIndex = 0; let closeTimer = null;
+    function initStage1() {
+      const grid = document.getElementById('flashcard-grid');
+      grid.innerHTML = '';
+      document.getElementById('st1-progress').innerText = state.st1Clicked.length;
+
+      vocabData.forEach((item, idx) => {
+        const isClicked = state.st1Clicked.includes(item.id);
+        const card = document.createElement('div');
+        card.id = `fcard-${item.id}`;
+        card.className = `ms-card ${isClicked ? 'completed' : ''}`;
+        card.innerHTML = `
+          <div style="font-size:15px; font-weight:900; color:var(--ms-dark-blue);">${item.word}</div>
+          <div style="font-size:11px; color:var(--ms-header-blue); font-weight:bold; margin-top:2px;">[${item.pron}]</div>
+        `;
+        card.onclick = () => { overlayIndex = idx; openCardOverlay(item); };
+        grid.appendChild(card);
+      });
+      if (state.st1Clicked.length >= vocabData.length) document.getElementById('st1-next-btn').disabled = false;
+    }
+
+    function openCardOverlay(item) {
+      AudioFX.playClick();
+      if (!state.st1Clicked.includes(item.id)) {
+        state.st1Clicked.push(item.id); addExp(3); saveState();
+        document.getElementById('st1-progress').innerText = state.st1Clicked.length;
+        const c = document.getElementById(`fcard-${item.id}`); if (c) c.classList.add('completed');
+      }
+
+      document.getElementById('ov-word').innerText = item.word;
+      document.getElementById('ov-pron').innerText = `[${item.pron}]`;
+      document.getElementById('ov-meaning').innerText = item.meaning;
+      document.getElementById('ov-ex').innerText = item.ex;
+      document.getElementById('ov-ex-kor').innerText = item.exKor;
+
+      document.getElementById('ov-tts-word').onclick = () => speakText(item.word);
+      document.getElementById('ov-tts-ex').onclick = () => speakText(item.ex);
+
+      const closeX = document.getElementById('ov-close-x');
+      const timerBadge = document.getElementById('ov-timer-badge');
+      closeX.style.display = 'none'; timerBadge.style.display = 'inline-block';
+      
+      let sec = 3; timerBadge.innerText = `⏳ 단어 확인 중... (${sec}초)`;
+      if (closeTimer) clearInterval(closeTimer);
+      closeTimer = setInterval(() => {
+        sec--;
+        if (sec > 0) timerBadge.innerText = `⏳ 단어 확인 중... (${sec}초)`;
+        else { clearInterval(closeTimer); timerBadge.style.display = 'none'; closeX.style.display = 'block'; }
+      }, 1000);
+
+      document.getElementById('card-overlay').style.display = 'flex';
+    }
+
+    function navigateOverlay(dir) {
+      overlayIndex = (overlayIndex + dir + vocabData.length) % vocabData.length;
+      openCardOverlay(vocabData[overlayIndex]);
+    }
+    function closeCardOverlay() {
+      document.getElementById('card-overlay').style.display = 'none';
+      if (state.st1Clicked.length >= vocabData.length) document.getElementById('st1-next-btn').disabled = false;
+    }
+    function completeStage1() { triggerStageClear(1, 3); }
+
+    /* =========================================================================
+       STAGE 2: MEANING QUIZ
+       ========================================================================= */
+    let st2Index = 0; let st2Time = 300; let st2List = []; let st2Hearts = 3;
+    function initStage2() {
+      st2Index = 0; st2Time = 300; st2Hearts = 3;
+      updateHearts('st2-hearts', st2Hearts);
+      st2List = [...vocabData].sort(() => Math.random() - 0.5);
+      clearInterval(timers.st2);
+      timers.st2 = setInterval(() => {
+        st2Time--;
+        const m = String(Math.floor(st2Time / 60)).padStart(2, '0');
+        const s = String(st2Time % 60).padStart(2, '0');
+        document.getElementById('st2-timer').innerText = `⏰ ${m}:${s}`;
+        if (st2Time <= 0) { clearInterval(timers.st2); showAlert('⏰ 시간 초과! 다시 도전합니다.', '시간초과', () => initStage2()); }
+      }, 1000);
+      showStage2Q();
+    }
+
+    function showStage2Q() {
+      if (st2Index >= st2List.length) { clearInterval(timers.st2); return triggerStageClear(2, st2Hearts); }
+      const q = st2List[st2Index];
+      document.getElementById('st2-count').innerText = `⭐ 문항 ${st2Index + 1}/${st2List.length}`;
+      document.getElementById('st2-q-word').innerText = q.word;
+
+      let opts = [q.meaning];
+      while (opts.length < 4) {
+        let r = vocabData[Math.floor(Math.random() * vocabData.length)].meaning;
+        if (!opts.includes(r)) opts.push(r);
+      }
+      opts.sort(() => Math.random() - 0.5);
+
+      const div = document.getElementById('st2-options'); div.innerHTML = '';
+      const nums = ['①', '②', '③', '④'];
+      opts.forEach((o, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = `<span class="opt-num">${nums[idx]}</span><span>${o}</span>`;
+        btn.onclick = () => {
+          if (o === q.meaning) {
+            AudioFX.playCorrect(); addExp(5);
+            st2Index++; showStage2Q();
+          } else {
+            AudioFX.playWrong(); logWrongWord(q.word); st2Hearts--;
+            updateHearts('st2-hearts', st2Hearts);
+            if (st2Hearts > 0) showAlert(`❌ 오답! 정답: '${q.meaning}'\n남은 기회: ${st2Hearts}번`, '하트 차감', () => { st2Index++; showStage2Q(); });
+            else showAlert(`❌ 하트 소진! 1번 문제부터 다시 도전합니다!`, '게임 오버', () => initStage2());
+          }
+        };
+        div.appendChild(btn);
+      });
+    }
+
+    /* =========================================================================
+       STAGE 3: CARD MATCHING
+       ========================================================================= */
+    let st3Round = 0; let st3List = []; let st3Selected = []; let st3Hearts = 3; let st3Hints = 4;
+    function initStage3() {
+      st3Round = 0; st3Hearts = 3; st3Hints = 4;
+      updateHearts('st3-hearts', st3Hearts);
+      st3List = [...vocabData].sort(() => Math.random() - 0.5);
+      document.getElementById('st3-hint-btn').innerText = `💡 힌트 (${st3Hints}/4)`;
+      loadStage3Round();
+    }
+
+    function loadStage3Round() {
+      st3Selected = [];
+      const slice = st3List.slice(st3Round * 8, (st3Round + 1) * 8);
+      document.getElementById('st3-round-num').innerText = st3Round + 1;
+      document.getElementById('st3-left').innerText = slice.length;
+
+      let deck = [];
+      slice.forEach(it => {
+        deck.push({ id: it.id, type: 'w', txt: it.word, word: it.word });
+        deck.push({ id: it.id, type: 'm', txt: it.meaning, word: it.word });
+      });
+      deck.sort(() => Math.random() - 0.5);
+
+      const grid = document.getElementById('st3-grid'); grid.innerHTML = '';
+      deck.forEach((c, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `match-btn ${c.type==='w'?'card-word':'card-meaning'}`;
+        btn.id = `m3-${idx}`;
+        btn.innerText = c.txt;
+        btn.onclick = () => handleStage3Click(btn, c, slice.length);
+        grid.appendChild(btn);
+      });
+    }
+
+    function handleStage3Click(btn, c, total) {
+      if (btn.classList.contains('matched') || btn.classList.contains('selected')) return;
+      AudioFX.playClick();
+      btn.classList.add('selected');
+      st3Selected.push({ btn, c });
+
+      if (st3Selected.length === 2) {
+        const [a, b] = st3Selected;
+        if (a.c.id === b.c.id && a.c.type !== b.c.type) {
+          AudioFX.playCorrect(); addExp(5);
+          setTimeout(() => {
+            a.btn.classList.add('matched'); b.btn.classList.add('matched');
+            const left = document.querySelectorAll('#st3-grid .match-btn:not(.matched)').length / 2;
+            document.getElementById('st3-left').innerText = left;
+            if (left === 0) {
+              st3Round++;
+              if (st3Round * 8 >= st3List.length) triggerStageClear(3, st3Hearts);
+              else loadStage3Round();
+            }
+          }, 200);
+        } else {
+          AudioFX.playWrong(); logWrongWord(a.c.word); st3Hearts--;
+          updateHearts('st3-hearts', st3Hearts);
+          if (st3Hearts > 0) showAlert(`❌ 짝이 맞지 않습니다! 남은 하트: ${st3Hearts}번`, '하트 차감', () => {
+            a.btn.classList.remove('selected'); b.btn.classList.remove('selected');
+          });
+          else showAlert('❌ 하트를 모두 소진했습니다! 1라운드부터 재도전!', '게임 오버', () => initStage3());
+        }
+        st3Selected = [];
+      }
+    }
+
+    function useStage3Hint() {
+      if (st3Hints <= 0) return showToast('힌트 소진!');
+      st3Hints--; document.getElementById('st3-hint-btn').innerText = `💡 힌트 (${st3Hints}/4)`;
+      showToast('💡 짝 카드 조합 힌트!');
+    }
+
+    /* =========================================================================
+       STAGE 4: SPEED RACE
+       ========================================================================= */
+    let st4PlayerProgress = 0; let st4AiProgress = 0; let st4VocabList = []; let st4Hearts = 3;
+    function initStage4() {
+      document.getElementById('st4-level-select').style.display = 'block';
+      document.getElementById('st4-game-area').style.display = 'none';
+      st4Hearts = 3; updateHearts('st4-hearts', st4Hearts);
+    }
+
+    function startStage4(lvl) {
+      AudioFX.playClick();
+      st4VocabList = [...vocabData].sort(() => Math.random() - 0.5);
+      st4PlayerProgress = 0; st4AiProgress = 0; st4Hearts = 3;
+      document.getElementById('st4-level-select').style.display = 'none';
+      document.getElementById('st4-game-area').style.display = 'block';
+      updateHearts('st4-hearts', st4Hearts);
+      updateStage4Track(); showStage4Word();
+
+      // Render running avatar sprite on track
+      document.getElementById('player-race-avatar').innerHTML = generateAvatarSvg(state.avatar, { size: 36, anim: 'run' });
+
+      clearInterval(timers.aiInterval);
+      timers.aiInterval = setInterval(() => {
+        st4AiProgress++; updateStage4Track();
+        if (st4AiProgress >= st4VocabList.length) {
+          clearInterval(timers.aiInterval); AudioFX.playWrong();
+          showAlert('🤖 AI에게 패배했습니다! 다시 도전하세요!', '패배', () => startStage4(lvl));
+        }
+      }, lvl === 'S' ? 3800 : 5200);
+
+      const inp = document.getElementById('st4-input');
+      inp.value = ''; inp.focus();
+      inp.onkeydown = (e) => { if (e.key === 'Enter') checkStage4Submit(); };
+    }
+
+    function checkStage4Submit() {
+      const inp = document.getElementById('st4-input');
+      const target = st4VocabList[st4PlayerProgress].word.toLowerCase().trim();
+      if (inp.value.toLowerCase().trim() === target) {
+        AudioFX.playCorrect(); addExp(5);
+        st4PlayerProgress++; inp.value = ''; updateStage4Track();
+        if (st4PlayerProgress >= st4VocabList.length) {
+          clearInterval(timers.aiInterval); triggerStageClear(4, st4Hearts);
+        } else showStage4Word();
+      } else {
+        AudioFX.playWrong(); logWrongWord(st4VocabList[st4PlayerProgress].word); st4Hearts--;
+        updateHearts('st4-hearts', st4Hearts);
+        if (st4Hearts > 0) showAlert(`❌ 오타! 정답: '${target}' (남은 기회: ${st4Hearts})`, '오타', () => { inp.value = ''; inp.focus(); });
+        else showAlert(`❌ 하트 소진! 1번 문제부터 재도전!`, '게임 오버', () => startStage4('A'));
+      }
+    }
+
+    function showStage4Word() {
+      const q = st4VocabList[st4PlayerProgress];
+      document.getElementById('st4-target-kor').innerText = q.meaning;
+      document.getElementById('st4-target-word').innerText = q.word;
+    }
+
+    function updateStage4Track() {
+      const len = st4VocabList.length;
+      document.getElementById('player-progress-text').innerText = `${st4PlayerProgress}/${len}`;
+      document.getElementById('ai-progress-text').innerText = `${st4AiProgress}/${len}`;
+      const pct = (st4PlayerProgress / len) * 100;
+      document.getElementById('player-bar').style.width = `${pct}%`;
+      document.getElementById('player-race-avatar').style.left = `clamp(0%, ${pct}%, calc(100% - 38px))`;
+      document.getElementById('ai-bar').style.width = `${(st4AiProgress / len) * 100}%`;
+    }
+
+    /* =========================================================================
+       STAGE 5: SENTENCE BLANK
+       ========================================================================= */
+    let st5Index = 0; let st5VocabList = []; let st5Hearts = 3; let st5Time = 600;
+    function initStage5() {
+      st5Index = 0; st5Hearts = 3; st5Time = 600;
+      updateHearts('st5-hearts', st5Hearts);
+      st5VocabList = [...vocabData].sort(() => Math.random() - 0.5);
+      showStage5Question();
+
+      clearInterval(timers.st5);
+      timers.st5 = setInterval(() => {
+        st5Time--;
+        const m = String(Math.floor(st5Time / 60)).padStart(2, '0');
+        const s = String(st5Time % 60).padStart(2, '0');
+        document.getElementById('st5-timer').innerText = `⏰ ${m}:${s}`;
+        if (st5Time <= 0) { clearInterval(timers.st5); showAlert('⏰ 시간 초과!', '시간초과', () => initStage5()); }
+      }, 1000);
+    }
+
+    function showStage5Question() {
+      if (st5Index >= st5VocabList.length) { clearInterval(timers.st5); return triggerStageClear(5, st5Hearts); }
+      const q = st5VocabList[st5Index];
+      document.getElementById('st5-count').innerText = `⭐ 문항 ${st5Index + 1}/${st5VocabList.length}`;
+      document.getElementById('st5-kor').innerText = `뜻: ${q.meaning}`;
+      const target = q.blankTarget || q.word;
+      document.getElementById('st5-ex').innerText = q.ex.replace(new RegExp(target, 'gi'), '________');
+      const inp = document.getElementById('st5-input');
+      inp.value = ''; inp.focus();
+      inp.onkeydown = (e) => { if (e.key === 'Enter') checkStage5(); };
+    }
+
+    function checkStage5() {
+      const q = st5VocabList[st5Index];
+      const val = document.getElementById('st5-input').value.trim().toLowerCase();
+      const ans = (q.blankTarget || q.word).toLowerCase();
+      if (val === ans || val === q.word.toLowerCase()) {
+        AudioFX.playCorrect(); addExp(5); st5Index++; showStage5Question();
+      } else {
+        AudioFX.playWrong(); logWrongWord(q.word); st5Hearts--;
+        updateHearts('st5-hearts', st5Hearts);
+        if (st5Hearts > 0) showAlert(`❌ 오답! 정답: '${ans}' (남은 기회: ${st5Hearts})`, '오답', () => { document.getElementById('st5-input').value = ''; });
+        else showAlert('❌ 하트 소진! 1번 문제부터 재도전!', '게임 오버', () => initStage5());
+      }
+    }
+
+    /* =========================================================================
+       STAGE 6: CERTIFICATE
+       ========================================================================= */
+    function renderCertificate() {
+      unlockBadge('b5'); AudioFX.playFanfare(); fireConfetti();
+      document.getElementById('cert-user-name').innerText = `👑 용사: ${state.userId} ${state.userName}`;
+      const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+      document.getElementById('cert-time').innerText = `${Math.floor(elapsed / 60)}분 ${elapsed % 60}초`;
+      document.getElementById('cert-switches').innerText = state.switchCount || 0;
+      document.getElementById('cert-level').innerText = `Lv.${state.level}`;
+
+      // Custom avatar rendered in certificate seal
+      document.getElementById('cert-avatar-frame').innerHTML = generateAvatarSvg(state.avatar, { size: 105, anim: 'idle' });
+
+      const wl = document.getElementById('cert-wrong-list'); wl.innerHTML = '';
+      const entries = Object.entries(state.wrongCounts);
+      if (entries.length === 0) wl.innerHTML = '<li>✨ 완벽합니다! 오답이 없습니다! 🎉</li>';
+      else {
+        entries.forEach(([w, c]) => {
+          const m = vocabData.find(v => v.word === w);
+          const li = document.createElement('li');
+          li.innerText = `${w} (${m ? m.meaning : ''}) : 오답 ${c}회`;
+          wl.appendChild(li);
+        });
+      }
+
+      const raw = `MAPLE_L6|${state.userId}|${state.userName}|Lv.${state.level}|${Math.floor(elapsed/60)}m${elapsed%60}s|${state.switchCount||0}`;
+      document.getElementById('result-code-display').innerText = 'VCODE-' + btoa(encodeURIComponent(raw));
+    }
+
+    function copyResultCode() {
+      navigator.clipboard.writeText(document.getElementById('result-code-display').innerText)
+        .then(() => showToast('📋 결과 코드가 복사되었습니다!'));
+    }
+
+    /* =========================================================================
+       HELPERS & ALERTS
+       ========================================================================= */
+    function updateHearts(id, count) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = '❤️'.repeat(count) + '🖤'.repeat(3 - count);
+    }
+    function showSpellingHint(target) {
+      if (target) showToast(`💡 첫 글자 힌트: '${target.charAt(0).toUpperCase()}' (총 ${target.length}글자)`);
+    }
+    function logWrongWord(w) {
+      state.wrongCounts[w] = (state.wrongCounts[w] || 0) + 1; saveState();
+    }
+    let alertCb = null;
+    function showAlert(msg, title = '🔔 알림', cb = null) {
+      document.getElementById('alert-title').innerText = title;
+      document.getElementById('alert-msg').innerText = msg;
+      document.getElementById('custom-alert-modal').style.display = 'flex';
+      alertCb = cb;
+    }
+    function closeCustomAlert() {
+      document.getElementById('custom-alert-modal').style.display = 'none';
+      if (alertCb) { const fn = alertCb; alertCb = null; fn(); }
+    }
+    function toggleMobileSidebar(side) {
+      document.getElementById(`${side}-sidebar`).classList.toggle('mobile-open');
+    }
+    function openAdmin() {
+      const pw = prompt('교사 관리자 비밀번호를 입력하세요:');
+      if (pw === '0111') {
+        state.unlockedStage = 6; saveState(); renderQuestNav();
+        showAlert('🔓 교사 모드 활성화 완료! 모든 단계가 해금되었습니다.');
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && state.userId) {
+        state.switchCount++; saveState(); updateAllUi();
+        showToast('✨ 화면 이탈 감지! 스스로 해봅시다! 💖');
+      }
+    });
+  </script>
+</body>
+</html>

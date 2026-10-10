@@ -1,0 +1,6 @@
+{
+  "name": "Maple Words RPG - Modular Avatar Studio & Lesson 6",
+  "description": "MapleStory-inspired English vocabulary RPG with a deep modular 2D avatar creator, layered pixel rendering engine, and Lesson 6 adventure quests.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
