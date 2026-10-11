@@ -22,6 +22,7 @@ import { Stage3Match } from './components/game/Stage3Match';
 import { Stage4Race } from './components/game/Stage4Race';
 import { Stage5Blank } from './components/game/Stage5Blank';
 import { Stage6Certificate } from './components/game/Stage6Certificate';
+import { TeacherAnalyzer } from './components/teacher/TeacherAnalyzer';
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -78,6 +79,7 @@ export default function App() {
   const [stageClearModal, setStageClearModal] = useState<{ stageNum: number; stars: number } | null>(null);
   const [badgeModal, setBadgeModal] = useState<{ badge: BadgeItem; isUnlocked: boolean } | null>(null);
   const [mobileSidebar, setMobileSidebar] = useState<'none' | 'left' | 'right'>('none');
+  const [isTeacherAnalyzerOpen, setIsTeacherAnalyzerOpen] = useState(false);
 
   useEffect(() => {
     if (isClassroomMode) {
@@ -266,193 +268,218 @@ export default function App() {
         }}
         onOpenAvatarStudio={() => setIsStudioOpen(true)}
         onTeacherAdmin={handleTeacherAdmin}
+        onOpenTeacherAnalyzer={() => setIsTeacherAnalyzerOpen(true)}
       />
 
-      {/* Classroom Mode Stage Quick Selector Bar */}
-      {isClassroomMode && (
-        <div className="max-w-[1200px] mx-auto mt-3 px-3 relative z-10">
-          <div className="bg-[#1B381E] border-3 border-[#4CAF50] rounded-xl p-2.5 flex items-center justify-between flex-wrap gap-2 text-white shadow-lg">
-            <div className="flex items-center gap-2 font-['DungGeunMo'] text-sm sm:text-base text-[#FCE868]">
-              <span>👩‍🏫 수업 진행 단계:</span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {[
-                { s: 1, label: '1. 단어 도감' },
-                { s: 2, label: '2. 뜻 퀴즈' },
-                { s: 3, label: '3. 짝 맞추기' },
-                { s: 4, label: '4. 타자 레이스' },
-                { s: 5, label: '5. 문장 빈칸' },
-                { s: 6, label: '6. 수료증' }
-              ].map((item) => (
-                <button
-                  key={item.s}
-                  onClick={() => {
-                    soundEngine.playClick();
-                    setGameState((prev) => ({ ...prev, currentStage: item.s }));
-                  }}
-                  className={`px-3 py-1.5 rounded-lg font-black text-xs sm:text-sm border-2 transition-all cursor-pointer ${
-                    gameState.currentStage === item.s
-                      ? 'bg-[#2E7D32] text-white border-[#81C784] shadow-[0_0_8px_#81C784] scale-105'
-                      : 'bg-[#264E29] text-gray-200 border-emerald-900 hover:bg-[#336838]'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {isTeacherAnalyzerOpen ? (
+        /* Teacher Mode: Student Code Analytics Dashboard */
+        <div className="relative z-10">
+          <TeacherAnalyzer onBackToGame={() => setIsTeacherAnalyzerOpen(false)} />
         </div>
-      )}
-
-      {/* Mobile Sidebar Nav Toggles */}
-      <div className="flex md:hidden justify-center gap-2 my-2.5 px-4 relative z-10">
-        <button
-          onClick={() => setMobileSidebar(mobileSidebar === 'left' ? 'none' : 'left')}
-          className={`px-3.5 py-2 text-xs sm:text-sm font-black rounded-lg border-2 border-[#1E3F20] shadow-[2px_2px_0_#0E2613] cursor-pointer ${
-            mobileSidebar === 'left' ? 'bg-[#2E7D32] text-white' : 'bg-white text-gray-900'
-          }`}
-        >
-          🌲 수업 진행 단계
-        </button>
-        <button
-          onClick={() => setMobileSidebar(mobileSidebar === 'right' ? 'none' : 'right')}
-          className={`px-3.5 py-2 text-xs sm:text-sm font-black rounded-lg border-2 border-[#1E3F20] shadow-[2px_2px_0_#0E2613] cursor-pointer ${
-            mobileSidebar === 'right' ? 'bg-[#5D4037] text-white' : 'bg-white text-gray-900'
-          }`}
-        >
-          🍄 내 캐릭터
-        </button>
-      </div>
-
-      {/* Main Persistent Game Layout: Left = 수업 진행 단계, Center = 학습 영역, Right = 내 캐릭터 */}
-      <div className="mx-auto my-4 px-3 sm:px-4 grid gap-4 items-start max-w-[1440px] grid-cols-1 md:grid-cols-[220px_1fr_250px] lg:grid-cols-[250px_1fr_290px] xl:grid-cols-[260px_1fr_310px] relative z-10">
-        {/* LEFT: 수업 진행 단계 */}
-        <LeftSidebar
-          unlockedStage={gameState.unlockedStage}
-          currentStage={gameState.currentStage}
-          stageStars={gameState.stageStars}
-          onSelectStage={(s) => {
-            soundEngine.playClick();
-            setGameState((prev) => ({ ...prev, currentStage: s }));
-            setMobileSidebar('none');
-          }}
-          isOpenMobile={mobileSidebar === 'left'}
-        />
-
-        {/* CENTER: MAIN WORKSPACE */}
-        <main className="bg-[#FFFFFF]/98 border-3 border-[#1E3F20] rounded-2xl shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.1),inset_2px_2px_0_rgba(255,255,255,0.8),5px_5px_0_#0E2613] p-4 sm:p-7 min-h-[660px]">
-          {gameState.currentStage === 1 && (
-            <Stage1Codex
-              vocabList={vocabData}
-              clickedIds={gameState.st1Clicked}
-              onCardClick={(item) => {
-                setGameState((prev) => {
-                  if (prev.st1Clicked.includes(item.id)) return prev;
-                  addExp(3);
-                  return {
-                    ...prev,
-                    st1Clicked: [...prev.st1Clicked, item.id]
-                  };
-                });
-              }}
-              onCompleteStage1={() => handleStageClear(1, 3)}
-            />
+      ) : (
+        <>
+          {/* Classroom Mode Stage Quick Selector Bar */}
+          {isClassroomMode && (
+            <div className="max-w-[1200px] mx-auto mt-3 px-3 relative z-10">
+              <div className="bg-[#1B381E] border-3 border-[#4CAF50] rounded-xl p-2.5 flex items-center justify-between flex-wrap gap-2 text-white shadow-lg">
+                <div className="flex items-center gap-2 font-['DungGeunMo'] text-sm sm:text-base text-[#FCE868]">
+                  <span>👩‍🏫 수업 진행 단계:</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { s: 1, label: '1. 단어 도감' },
+                    { s: 2, label: '2. 뜻 퀴즈' },
+                    { s: 3, label: '3. 짝 맞추기' },
+                    { s: 4, label: '4. 타자 레이스' },
+                    { s: 5, label: '5. 문장 빈칸' },
+                    { s: 6, label: '6. 수료증' }
+                  ].map((item) => (
+                    <button
+                      key={item.s}
+                      onClick={() => {
+                        soundEngine.playClick();
+                        setGameState((prev) => ({ ...prev, currentStage: item.s }));
+                      }}
+                      className={`px-3 py-1.5 rounded-lg font-black text-xs sm:text-sm border-2 transition-all cursor-pointer ${
+                        gameState.currentStage === item.s
+                          ? 'bg-[#2E7D32] text-white border-[#81C784] shadow-[0_0_8px_#81C784] scale-105'
+                          : 'bg-[#264E29] text-gray-200 border-emerald-900 hover:bg-[#336838]'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
 
-          {gameState.currentStage === 2 && (
-            <Stage2Quiz
-              vocabList={vocabData}
-              onCorrectAnswer={() => addExp(5)}
-              onWrongAnswer={(word) => logWrongWord(word)}
-              onStageClear={(hearts) => handleStageClear(2, hearts)}
-              onRestart={() => {
-                setGameState((prev) => ({ ...prev, currentStage: 2 }));
-              }}
-            />
-          )}
+          {/* Mobile Sidebar Nav Toggles */}
+          <div className="flex md:hidden justify-center gap-2 my-2.5 px-4 relative z-10">
+            <button
+              onClick={() => setMobileSidebar(mobileSidebar === 'left' ? 'none' : 'left')}
+              className={`px-3.5 py-2 text-xs sm:text-sm font-black rounded-lg border-2 border-[#1E3F20] shadow-[2px_2px_0_#0E2613] cursor-pointer ${
+                mobileSidebar === 'left' ? 'bg-[#2E7D32] text-white' : 'bg-white text-gray-900'
+              }`}
+            >
+              🌲 수업 진행 단계
+            </button>
+            <button
+              onClick={() => setMobileSidebar(mobileSidebar === 'right' ? 'none' : 'right')}
+              className={`px-3.5 py-2 text-xs sm:text-sm font-black rounded-lg border-2 border-[#1E3F20] shadow-[2px_2px_0_#0E2613] cursor-pointer ${
+                mobileSidebar === 'right' ? 'bg-[#5D4037] text-white' : 'bg-white text-gray-900'
+              }`}
+            >
+              🍄 내 캐릭터
+            </button>
+          </div>
 
-          {gameState.currentStage === 3 && (
-            <Stage3Match
-              vocabList={vocabData}
-              onCorrectMatch={() => addExp(5)}
-              onWrongMatch={(word) => logWrongWord(word)}
-              onStageClear={(hearts) => handleStageClear(3, hearts)}
-              onRestart={() => {
-                setGameState((prev) => ({ ...prev, currentStage: 3 }));
+          {/* Main Persistent Game Layout: Left = 수업 진행 단계, Center = 학습 영역, Right = 내 캐릭터 */}
+          <div className="mx-auto my-4 px-3 sm:px-4 grid gap-4 items-start max-w-[1440px] grid-cols-1 md:grid-cols-[220px_1fr_250px] lg:grid-cols-[250px_1fr_290px] xl:grid-cols-[260px_1fr_310px] relative z-10">
+            {/* LEFT: 수업 진행 단계 */}
+            <LeftSidebar
+              unlockedStage={gameState.unlockedStage}
+              currentStage={gameState.currentStage}
+              stageStars={gameState.stageStars}
+              onSelectStage={(s) => {
+                soundEngine.playClick();
+                setGameState((prev) => ({ ...prev, currentStage: s }));
+                setMobileSidebar('none');
               }}
+              isOpenMobile={mobileSidebar === 'left'}
             />
-          )}
 
-          {gameState.currentStage === 4 && (
-            <Stage4Race
-              vocabList={vocabData}
-              avatarConfig={gameState.avatar}
-              onCorrectSubmit={() => addExp(5)}
-              onWrongSubmit={(word) => logWrongWord(word)}
-              onStageClear={(hearts) => handleStageClear(4, hearts)}
-              onRestart={() => {
-                setGameState((prev) => ({ ...prev, currentStage: 4 }));
-              }}
-            />
-          )}
+            {/* CENTER: MAIN WORKSPACE */}
+            <main className="bg-[#FFFFFF]/98 border-3 border-[#1E3F20] rounded-2xl shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.1),inset_2px_2px_0_rgba(255,255,255,0.8),5px_5px_0_#0E2613] p-4 sm:p-7 min-h-[660px]">
+              {gameState.currentStage === 1 && (
+                <Stage1Codex
+                  vocabList={vocabData}
+                  clickedIds={gameState.st1Clicked}
+                  onCardClick={(item) => {
+                    setGameState((prev) => {
+                      if (prev.st1Clicked.includes(item.id)) return prev;
+                      addExp(3);
+                      return {
+                        ...prev,
+                        st1Clicked: [...prev.st1Clicked, item.id]
+                      };
+                    });
+                  }}
+                  onCompleteStage1={() => handleStageClear(1, 3)}
+                />
+              )}
 
-          {gameState.currentStage === 5 && (
-            <Stage5Blank
-              vocabList={vocabData}
-              onCorrectSubmit={() => addExp(5)}
-              onWrongSubmit={(word) => logWrongWord(word)}
-              onStageClear={(hearts) => handleStageClear(5, hearts)}
-              onRestart={() => {
-                setGameState((prev) => ({ ...prev, currentStage: 5 }));
-              }}
-            />
-          )}
+              {gameState.currentStage === 2 && (
+                <Stage2Quiz
+                  vocabList={vocabData}
+                  onCorrectAnswer={() => addExp(5)}
+                  onWrongAnswer={(word) => logWrongWord(word)}
+                  onStageClear={(hearts) => handleStageClear(2, hearts)}
+                  onRestart={() => {
+                    setGameState((prev) => ({ ...prev, currentStage: 2 }));
+                  }}
+                />
+              )}
 
-          {gameState.currentStage === 6 && (
-            <Stage6Certificate
-              userId={gameState.userId}
+              {gameState.currentStage === 3 && (
+                <Stage3Match
+                  vocabList={vocabData}
+                  onCorrectMatch={() => addExp(5)}
+                  onWrongMatch={(word) => logWrongWord(word)}
+                  onStageClear={(hearts) => handleStageClear(3, hearts)}
+                  onRestart={() => {
+                    setGameState((prev) => ({ ...prev, currentStage: 3 }));
+                  }}
+                />
+              )}
+
+              {gameState.currentStage === 4 && (
+                <Stage4Race
+                  vocabList={vocabData}
+                  avatarConfig={gameState.avatar}
+                  onCorrectSubmit={() => addExp(5)}
+                  onWrongSubmit={(word) => logWrongWord(word)}
+                  onStageClear={(hearts) => handleStageClear(4, hearts)}
+                  onRestart={() => {
+                    setGameState((prev) => ({ ...prev, currentStage: 4 }));
+                  }}
+                />
+              )}
+
+              {gameState.currentStage === 5 && (
+                <Stage5Blank
+                  vocabList={vocabData}
+                  onCorrectSubmit={() => addExp(5)}
+                  onWrongSubmit={(word) => logWrongWord(word)}
+                  onStageClear={(hearts) => handleStageClear(5, hearts)}
+                  onRestart={() => {
+                    setGameState((prev) => ({ ...prev, currentStage: 5 }));
+                  }}
+                />
+              )}
+
+              {gameState.currentStage === 6 && (
+                <Stage6Certificate
+                  userId={gameState.userId}
+                  userName={gameState.userName}
+                  level={gameState.level}
+                  startTime={gameState.startTime}
+                  switchCount={gameState.switchCount}
+                  wrongCounts={gameState.wrongCounts}
+                  selectedLevel={gameState.selectedLevel}
+                  avatarConfig={gameState.avatar}
+                  vocabList={vocabData}
+                />
+              )}
+            </main>
+
+            {/* RIGHT: 내 캐릭터 */}
+            <RightSidebar
               userName={gameState.userName}
               level={gameState.level}
-              startTime={gameState.startTime}
+              exp={gameState.exp}
               switchCount={gameState.switchCount}
-              wrongCounts={gameState.wrongCounts}
-              selectedLevel={gameState.selectedLevel}
               avatarConfig={gameState.avatar}
-              vocabList={vocabData}
+              badges={badgeData}
+              unlockedBadges={gameState.badges}
+              onOpenAvatarStudio={() => setIsStudioOpen(true)}
+              onBadgeClick={(badge, isUnlocked) => {
+                soundEngine.playClick();
+                setBadgeModal({ badge, isUnlocked });
+              }}
+              isOpenMobile={mobileSidebar === 'right'}
             />
-          )}
-        </main>
-
-        {/* RIGHT: 내 캐릭터 */}
-        <RightSidebar
-          userName={gameState.userName}
-          level={gameState.level}
-          exp={gameState.exp}
-          switchCount={gameState.switchCount}
-          avatarConfig={gameState.avatar}
-          badges={badgeData}
-          unlockedBadges={gameState.badges}
-          onOpenAvatarStudio={() => setIsStudioOpen(true)}
-          onBadgeClick={(badge, isUnlocked) => {
-            soundEngine.playClick();
-            setBadgeModal({ badge, isUnlocked });
-          }}
-          isOpenMobile={mobileSidebar === 'right'}
-        />
-      </div>
+          </div>
+        </>
+      )}
 
       {/* Footer */}
       <footer className="text-center text-xs font-black text-[#C8E6C9] py-6 tracking-wide drop-shadow-sm relative z-10">
         🌲 마법의 어휘 숲 • made by 민경쌤 🍁
       </footer>
 
-      {/* Secret Teacher Mode Trigger */}
-      <button
-        onClick={handleTeacherAdmin}
-        className="fixed bottom-2.5 right-2.5 bg-white/90 hover:bg-white text-gray-800 border-2 border-black rounded px-2.5 py-1 text-[11px] font-bold shadow-md z-30"
-      >
-        🔑 교사모드
-      </button>
+      {/* Floating Bottom Quick Action Toolbar */}
+      <div className="fixed bottom-2.5 right-2.5 flex items-center gap-1.5 z-30">
+        <button
+          onClick={() => {
+            soundEngine.playClick();
+            setIsTeacherAnalyzerOpen(true);
+          }}
+          className="bg-[#FFD54F] hover:bg-[#FFCA28] text-[#111B27] border-2 border-black rounded-lg px-3 py-1.5 text-xs font-black shadow-[2px_2px_0_#000] cursor-pointer flex items-center gap-1 active:translate-y-0.5"
+          title="학생들이 제출한 인증 코드를 분석하는 교사용 대시보드를 엽니다"
+        >
+          <span>👩‍🏫</span>
+          <span>교사 코드 분석기</span>
+        </button>
+        <button
+          onClick={handleTeacherAdmin}
+          className="bg-white/90 hover:bg-white text-gray-800 border-2 border-black rounded-lg px-2.5 py-1.5 text-xs font-bold shadow-[2px_2px_0_#000] cursor-pointer active:translate-y-0.5"
+          title="비밀번호 0111로 모든 학습 단계 즉시 해금"
+        >
+          <span>🔑</span>
+          <span>단계해금</span>
+        </button>
+      </div>
 
       {/* Login & Character Creation Modal */}
       <LoginModal

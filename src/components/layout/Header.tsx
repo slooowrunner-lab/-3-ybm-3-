@@ -11,6 +11,7 @@ interface HeaderProps {
   onToggleClassroomMode: () => void;
   onOpenAvatarStudio: () => void;
   onTeacherAdmin: () => void;
+  onOpenTeacherAnalyzer: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,7 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleBgm,
   onToggleClassroomMode,
   onOpenAvatarStudio,
-  onTeacherAdmin
+  onTeacherAdmin,
+  onOpenTeacherAnalyzer
 }) => {
   return (
     <header className="bg-gradient-to-b from-[#2E5E36] via-[#234D2A] to-[#16381D] border-b-4 border-[#0E2613] px-3 sm:px-6 py-2.5 text-white shadow-xl sticky top-0 z-40 flex items-center justify-between flex-wrap gap-2.5">
@@ -47,6 +49,19 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+        {/* Teacher Code Analyzer Dedicated Button */}
+        <button
+          onClick={() => {
+            soundEngine.playClick();
+            onOpenTeacherAnalyzer();
+          }}
+          className="px-3 sm:px-3.5 py-2 bg-gradient-to-b from-[#FFD54F] to-[#FFA000] hover:from-[#FFE082] hover:to-[#FFB300] text-[#111B27] font-black text-xs sm:text-sm rounded-lg border-2 border-black shadow-[2px_2px_0_#000] flex items-center gap-1.5 active:translate-y-0.5 cursor-pointer ring-2 ring-[#FFD54F]/50 animate-pulse"
+          title="학생들이 보낸 인증 코드를 일괄 분석하고 성취도를 확인합니다"
+        >
+          <span>👩‍🏫</span>
+          <span className="font-['DungGeunMo']">교사용 코드 분석기</span>
+        </button>
+
         {/* Classroom Presentation Mode Toggle */}
         <button
           onClick={() => {
@@ -64,17 +79,17 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{isClassroomMode ? '수업 집중 ON' : '수업 집중 모드'}</span>
         </button>
 
-        {/* Teacher Admin Modal Trigger */}
+        {/* Teacher Stage Unlock Trigger */}
         <button
           onClick={() => {
             soundEngine.playClick();
             onTeacherAdmin();
           }}
           className="px-2.5 sm:px-3 py-2 bg-[#78909C] hover:bg-[#607D8B] text-white font-bold text-xs sm:text-sm rounded-lg border-2 border-black shadow-[2px_2px_0_#000] flex items-center gap-1 active:translate-y-0.5 cursor-pointer"
-          title="교사용 잠금 해제 (비밀번호: 0111)"
+          title="전체 단계 즉시 해금 (비밀번호: 0111)"
         >
-          <span>👩‍🏫</span>
-          <span className="hidden md:inline">교사 메뉴</span>
+          <span>🔑</span>
+          <span className="hidden md:inline">단계 해금</span>
         </button>
 
         {/* Open Avatar Studio button */}
